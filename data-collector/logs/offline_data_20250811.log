@@ -1,0 +1,219 @@
+2025-08-11 13:50:56,667 - OfflineDataScheduler - INFO - 🚀 开始批量数据收集
+2025-08-11 13:50:56,667 - OfflineDataScheduler - INFO - 货币对: ['BTCUSDT', 'ETHUSDT']
+2025-08-11 13:50:56,667 - OfflineDataScheduler - INFO - 时间间隔: ['1h', '4h']
+2025-08-11 13:50:56,667 - OfflineDataScheduler - INFO - 时间范围: 2024-08-09 到 2024-08-10
+2025-08-11 13:50:56,667 - OfflineDataScheduler - INFO - 最大并发数: 2
+2025-08-11 13:50:56,667 - OfflineDataScheduler - INFO - ============================================================
+2025-08-11 13:50:56,667 - OfflineDataScheduler - INFO - 总共 4 个任务
+2025-08-11 13:50:56,671 - OfflineDataScheduler - INFO - 开始获取 BTCUSDT 1h 数据...
+2025-08-11 13:50:56,671 - OfflineDataScheduler - INFO - 开始获取 BTCUSDT 4h 数据...
+2025-08-11 13:50:56,897 - OfflineDataScheduler - INFO - ✅ BTCUSDT 1h 数据获取成功 - 插入 0 条记录，耗时 0.23s
+2025-08-11 13:50:56,897 - OfflineDataScheduler - INFO - 开始获取 ETHUSDT 1h 数据...
+2025-08-11 13:50:56,897 - OfflineDataScheduler - INFO - [1/4] 处理 BTCUSDT 1h
+2025-08-11 13:50:57,071 - OfflineDataScheduler - INFO - ✅ ETHUSDT 1h 数据获取成功 - 插入 0 条记录，耗时 0.17s
+2025-08-11 13:50:57,072 - OfflineDataScheduler - INFO - 开始获取 ETHUSDT 4h 数据...
+2025-08-11 13:50:57,072 - OfflineDataScheduler - INFO - [3/4] 处理 ETHUSDT 1h
+2025-08-11 13:50:57,210 - OfflineDataScheduler - INFO - ✅ BTCUSDT 4h 数据获取成功 - 插入 7 条记录，耗时 0.54s
+2025-08-11 13:50:57,210 - OfflineDataScheduler - INFO - [2/4] 处理 BTCUSDT 4h
+2025-08-11 13:50:57,566 - OfflineDataScheduler - INFO - ✅ ETHUSDT 4h 数据获取成功 - 插入 7 条记录，耗时 0.49s
+2025-08-11 13:50:57,566 - OfflineDataScheduler - INFO - [4/4] 处理 ETHUSDT 4h
+2025-08-11 13:51:03,355 - OfflineDataScheduler - INFO - 🚀 开始批量数据收集
+2025-08-11 13:51:03,355 - OfflineDataScheduler - INFO - 货币对: ['ADAUSDT']
+2025-08-11 13:51:03,355 - OfflineDataScheduler - INFO - 时间间隔: ['1h', '1d']
+2025-08-11 13:51:03,355 - OfflineDataScheduler - INFO - 时间范围: 2025-08-10 到 2025-08-11
+2025-08-11 13:51:03,355 - OfflineDataScheduler - INFO - 最大并发数: 1
+2025-08-11 13:51:03,355 - OfflineDataScheduler - INFO - ============================================================
+2025-08-11 13:51:03,355 - OfflineDataScheduler - INFO - 总共 2 个任务
+2025-08-11 13:51:03,355 - OfflineDataScheduler - INFO - [1/2] 处理 ADAUSDT 1h
+2025-08-11 13:51:03,355 - OfflineDataScheduler - INFO - 开始获取 ADAUSDT 1h 数据...
+2025-08-11 13:51:03,865 - OfflineDataScheduler - INFO - ✅ ADAUSDT 1h 数据获取成功 - 插入 25 条记录，耗时 0.51s
+2025-08-11 13:51:04,371 - OfflineDataScheduler - INFO - [2/2] 处理 ADAUSDT 1d
+2025-08-11 13:51:04,371 - OfflineDataScheduler - INFO - 开始获取 ADAUSDT 1d 数据...
+2025-08-11 13:51:05,198 - OfflineDataScheduler - INFO - ✅ ADAUSDT 1d 数据获取成功 - 插入 1 条记录，耗时 0.83s
+2025-08-11 13:55:42,182 - OfflineDataScheduler - INFO - 🚀 开始批量数据收集
+2025-08-11 13:55:42,182 - OfflineDataScheduler - INFO - 货币对：['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'XRPUSDT', 'SOLUSDT', 'DOTUSDT', 'DOGEUSDT', 'AVAXUSDT', 'LINKUSDT']
+2025-08-11 13:55:42,182 - OfflineDataScheduler - INFO - 时间间隔：['5m', '15m', '30m', '1h', '4h', '1d']
+2025-08-11 13:55:42,182 - OfflineDataScheduler - INFO - 时间范围：2025-08-04 到 2025-08-11
+2025-08-11 13:55:42,183 - OfflineDataScheduler - INFO - 最大并发数：3
+2025-08-11 13:55:42,183 - OfflineDataScheduler - INFO - ============================================================
+2025-08-11 13:55:42,183 - OfflineDataScheduler - INFO - 总共 60 个任务
+2025-08-11 13:55:42,184 - OfflineDataScheduler - INFO - 开始获取 BTCUSDT 5m 数据...
+2025-08-11 13:55:42,184 - OfflineDataScheduler - INFO - 开始获取 BTCUSDT 15m 数据...
+2025-08-11 13:55:42,184 - OfflineDataScheduler - INFO - 开始获取 BTCUSDT 30m 数据...
+2025-08-11 13:55:42,415 - OfflineDataScheduler - INFO - ✅ BTCUSDT 15m 数据获取成功 - 插入 0 条记录，耗时 0.23s
+2025-08-11 13:55:42,415 - OfflineDataScheduler - INFO - ✅ BTCUSDT 30m 数据获取成功 - 插入 0 条记录，耗时 0.23s
+2025-08-11 13:55:42,415 - OfflineDataScheduler - INFO - 开始获取 BTCUSDT 1h 数据...
+2025-08-11 13:55:42,416 - OfflineDataScheduler - INFO - [2/60] 处理 BTCUSDT 15m
+2025-08-11 13:55:42,416 - OfflineDataScheduler - INFO - 开始获取 BTCUSDT 4h 数据...
+2025-08-11 13:55:42,521 - OfflineDataScheduler - INFO - [3/60] 处理 BTCUSDT 30m
+2025-08-11 13:55:42,601 - OfflineDataScheduler - INFO - ✅ BTCUSDT 1h 数据获取成功 - 插入 0 条记录，耗时 0.19s
+2025-08-11 13:55:42,601 - OfflineDataScheduler - INFO - 开始获取 BTCUSDT 1d 数据...
+2025-08-11 13:55:42,626 - OfflineDataScheduler - INFO - [4/60] 处理 BTCUSDT 1h
+2025-08-11 13:55:42,775 - OfflineDataScheduler - INFO - ✅ BTCUSDT 1d 数据获取成功 - 插入 0 条记录，耗时 0.17s
+2025-08-11 13:55:42,775 - OfflineDataScheduler - INFO - 开始获取 ETHUSDT 5m 数据...
+2025-08-11 13:55:42,775 - OfflineDataScheduler - INFO - [6/60] 处理 BTCUSDT 1d
+2025-08-11 13:55:43,614 - OfflineDataScheduler - INFO - ✅ BTCUSDT 5m 数据获取成功 - 插入 2017 条记录，耗时 1.43s
+2025-08-11 13:55:43,614 - OfflineDataScheduler - INFO - 开始获取 ETHUSDT 15m 数据...
+2025-08-11 13:55:43,614 - OfflineDataScheduler - INFO - [1/60] 处理 BTCUSDT 5m
+2025-08-11 13:55:43,840 - OfflineDataScheduler - INFO - ✅ BTCUSDT 4h 数据获取成功 - 插入 2182 条记录，耗时 1.42s
+2025-08-11 13:55:43,840 - OfflineDataScheduler - INFO - 开始获取 ETHUSDT 30m 数据...
+2025-08-11 13:55:43,841 - OfflineDataScheduler - INFO - [5/60] 处理 BTCUSDT 4h
+2025-08-11 13:55:44,172 - OfflineDataScheduler - INFO - ✅ ETHUSDT 5m 数据获取成功 - 插入 2017 条记录，耗时 1.40s
+2025-08-11 13:55:44,172 - OfflineDataScheduler - INFO - 开始获取 ETHUSDT 1h 数据...
+2025-08-11 13:55:44,172 - OfflineDataScheduler - INFO - [7/60] 处理 ETHUSDT 5m
+2025-08-11 13:55:44,177 - OfflineDataScheduler - INFO - ✅ ETHUSDT 15m 数据获取成功 - 插入 673 条记录，耗时 0.56s
+2025-08-11 13:55:44,178 - OfflineDataScheduler - INFO - 开始获取 ETHUSDT 4h 数据...
+2025-08-11 13:55:44,278 - OfflineDataScheduler - INFO - [8/60] 处理 ETHUSDT 15m
+2025-08-11 13:55:44,353 - OfflineDataScheduler - INFO - ✅ ETHUSDT 30m 数据获取成功 - 插入 337 条记录，耗时 0.51s
+2025-08-11 13:55:44,353 - OfflineDataScheduler - INFO - 开始获取 ETHUSDT 1d 数据...
+2025-08-11 13:55:44,383 - OfflineDataScheduler - INFO - [9/60] 处理 ETHUSDT 30m
+2025-08-11 13:55:45,151 - OfflineDataScheduler - INFO - ✅ ETHUSDT 1d 数据获取成功 - 插入 7 条记录，耗时 0.80s
+2025-08-11 13:55:45,151 - OfflineDataScheduler - INFO - 开始获取 BNBUSDT 5m 数据...
+2025-08-11 13:55:45,151 - OfflineDataScheduler - INFO - [12/60] 处理 ETHUSDT 1d
+2025-08-11 13:55:45,715 - OfflineDataScheduler - INFO - ✅ ETHUSDT 4h 数据获取成功 - 插入 2182 条记录，耗时 1.54s
+2025-08-11 13:55:45,716 - OfflineDataScheduler - INFO - 开始获取 BNBUSDT 15m 数据...
+2025-08-11 13:55:45,716 - OfflineDataScheduler - INFO - [11/60] 处理 ETHUSDT 4h
+2025-08-11 13:55:46,289 - OfflineDataScheduler - INFO - ✅ BNBUSDT 15m 数据获取成功 - 插入 673 条记录，耗时 0.57s
+2025-08-11 13:55:46,289 - OfflineDataScheduler - INFO - 开始获取 BNBUSDT 30m 数据...
+2025-08-11 13:55:46,289 - OfflineDataScheduler - INFO - [14/60] 处理 BNBUSDT 15m
+2025-08-11 13:55:46,506 - OfflineDataScheduler - INFO - ✅ BNBUSDT 5m 数据获取成功 - 插入 2017 条记录，耗时 1.36s
+2025-08-11 13:55:46,506 - OfflineDataScheduler - INFO - 开始获取 BNBUSDT 1h 数据...
+2025-08-11 13:55:46,506 - OfflineDataScheduler - INFO - [13/60] 处理 BNBUSDT 5m
+2025-08-11 13:55:46,809 - OfflineDataScheduler - INFO - ✅ BNBUSDT 30m 数据获取成功 - 插入 337 条记录，耗时 0.52s
+2025-08-11 13:55:46,809 - OfflineDataScheduler - INFO - 开始获取 BNBUSDT 4h 数据...
+2025-08-11 13:55:46,809 - OfflineDataScheduler - INFO - [15/60] 处理 BNBUSDT 30m
+2025-08-11 13:55:47,003 - OfflineDataScheduler - INFO - ✅ BNBUSDT 1h 数据获取成功 - 插入 169 条记录，耗时 0.50s
+2025-08-11 13:55:47,004 - OfflineDataScheduler - INFO - 开始获取 BNBUSDT 1d 数据...
+2025-08-11 13:55:47,004 - OfflineDataScheduler - INFO - [16/60] 处理 BNBUSDT 1h
+2025-08-11 13:55:47,290 - OfflineDataScheduler - INFO - ✅ BNBUSDT 4h 数据获取成功 - 插入 43 条记录，耗时 0.48s
+2025-08-11 13:55:47,291 - OfflineDataScheduler - INFO - 开始获取 ADAUSDT 5m 数据...
+2025-08-11 13:55:47,291 - OfflineDataScheduler - INFO - [17/60] 处理 BNBUSDT 4h
+2025-08-11 13:55:47,771 - OfflineDataScheduler - INFO - ✅ BNBUSDT 1d 数据获取成功 - 插入 7 条记录，耗时 0.77s
+2025-08-11 13:55:47,771 - OfflineDataScheduler - INFO - 开始获取 ADAUSDT 15m 数据...
+2025-08-11 13:55:47,771 - OfflineDataScheduler - INFO - [18/60] 处理 BNBUSDT 1d
+2025-08-11 13:55:48,360 - OfflineDataScheduler - INFO - ✅ ADAUSDT 15m 数据获取成功 - 插入 673 条记录，耗时 0.59s
+2025-08-11 13:55:48,360 - OfflineDataScheduler - INFO - 开始获取 ADAUSDT 30m 数据...
+2025-08-11 13:55:48,360 - OfflineDataScheduler - INFO - [20/60] 处理 ADAUSDT 15m
+2025-08-11 13:55:48,448 - OfflineDataScheduler - INFO - ✅ ETHUSDT 1h 数据获取成功 - 插入 8736 条记录，耗时 4.28s
+2025-08-11 13:55:48,448 - OfflineDataScheduler - INFO - 开始获取 ADAUSDT 1h 数据...
+2025-08-11 13:55:48,461 - OfflineDataScheduler - INFO - [10/60] 处理 ETHUSDT 1h
+2025-08-11 13:55:48,619 - OfflineDataScheduler - INFO - ✅ ADAUSDT 1h 数据获取成功 - 插入 0 条记录，耗时 0.17s
+2025-08-11 13:55:48,619 - OfflineDataScheduler - INFO - 开始获取 ADAUSDT 4h 数据...
+2025-08-11 13:55:48,619 - OfflineDataScheduler - INFO - [22/60] 处理 ADAUSDT 1h
+2025-08-11 13:55:48,653 - OfflineDataScheduler - INFO - ✅ ADAUSDT 5m 数据获取成功 - 插入 2017 条记录，耗时 1.36s
+2025-08-11 13:55:48,653 - OfflineDataScheduler - INFO - 开始获取 ADAUSDT 1d 数据...
+2025-08-11 13:55:48,728 - OfflineDataScheduler - INFO - [19/60] 处理 ADAUSDT 5m
+2025-08-11 13:55:48,828 - OfflineDataScheduler - INFO - ✅ ADAUSDT 1d 数据获取成功 - 插入 0 条记录，耗时 0.18s
+2025-08-11 13:55:48,828 - OfflineDataScheduler - INFO - 开始获取 XRPUSDT 5m 数据...
+2025-08-11 13:55:48,833 - OfflineDataScheduler - INFO - [24/60] 处理 ADAUSDT 1d
+2025-08-11 13:55:48,876 - OfflineDataScheduler - INFO - ✅ ADAUSDT 30m 数据获取成功 - 插入 337 条记录，耗时 0.52s
+2025-08-11 13:55:48,876 - OfflineDataScheduler - INFO - 开始获取 XRPUSDT 15m 数据...
+2025-08-11 13:55:48,935 - OfflineDataScheduler - INFO - [21/60] 处理 ADAUSDT 30m
+2025-08-11 13:55:49,106 - OfflineDataScheduler - INFO - ✅ ADAUSDT 4h 数据获取成功 - 插入 43 条记录，耗时 0.49s
+2025-08-11 13:55:49,106 - OfflineDataScheduler - INFO - 开始获取 XRPUSDT 30m 数据...
+2025-08-11 13:55:49,106 - OfflineDataScheduler - INFO - [23/60] 处理 ADAUSDT 4h
+2025-08-11 13:55:49,437 - OfflineDataScheduler - INFO - ✅ XRPUSDT 15m 数据获取成功 - 插入 673 条记录，耗时 0.56s
+2025-08-11 13:55:49,437 - OfflineDataScheduler - INFO - 开始获取 XRPUSDT 1h 数据...
+2025-08-11 13:55:49,437 - OfflineDataScheduler - INFO - [26/60] 处理 XRPUSDT 15m
+2025-08-11 13:55:49,739 - OfflineDataScheduler - INFO - ✅ XRPUSDT 30m 数据获取成功 - 插入 337 条记录，耗时 0.63s
+2025-08-11 13:55:49,739 - OfflineDataScheduler - INFO - 开始获取 XRPUSDT 4h 数据...
+2025-08-11 13:55:49,739 - OfflineDataScheduler - INFO - [27/60] 处理 XRPUSDT 30m
+2025-08-11 13:55:49,936 - OfflineDataScheduler - INFO - ✅ XRPUSDT 1h 数据获取成功 - 插入 169 条记录，耗时 0.50s
+2025-08-11 13:55:49,936 - OfflineDataScheduler - INFO - 开始获取 XRPUSDT 1d 数据...
+2025-08-11 13:55:49,936 - OfflineDataScheduler - INFO - [28/60] 处理 XRPUSDT 1h
+2025-08-11 13:55:50,101 - OfflineDataScheduler - INFO - ✅ XRPUSDT 5m 数据获取成功 - 插入 2017 条记录，耗时 1.27s
+2025-08-11 13:55:50,101 - OfflineDataScheduler - INFO - 开始获取 SOLUSDT 5m 数据...
+2025-08-11 13:55:50,101 - OfflineDataScheduler - INFO - [25/60] 处理 XRPUSDT 5m
+2025-08-11 13:55:50,216 - OfflineDataScheduler - INFO - ✅ XRPUSDT 4h 数据获取成功 - 插入 43 条记录，耗时 0.48s
+2025-08-11 13:55:50,216 - OfflineDataScheduler - INFO - 开始获取 SOLUSDT 15m 数据...
+2025-08-11 13:55:50,216 - OfflineDataScheduler - INFO - [29/60] 处理 XRPUSDT 4h
+2025-08-11 13:55:50,721 - OfflineDataScheduler - INFO - ✅ XRPUSDT 1d 数据获取成功 - 插入 7 条记录，耗时 0.78s
+2025-08-11 13:55:50,721 - OfflineDataScheduler - INFO - 开始获取 SOLUSDT 30m 数据...
+2025-08-11 13:55:50,721 - OfflineDataScheduler - INFO - [30/60] 处理 XRPUSDT 1d
+2025-08-11 13:55:50,770 - OfflineDataScheduler - INFO - ✅ SOLUSDT 15m 数据获取成功 - 插入 673 条记录，耗时 0.55s
+2025-08-11 13:55:50,770 - OfflineDataScheduler - INFO - 开始获取 SOLUSDT 1h 数据...
+2025-08-11 13:55:50,827 - OfflineDataScheduler - INFO - [32/60] 处理 SOLUSDT 15m
+2025-08-11 13:55:51,297 - OfflineDataScheduler - INFO - ✅ SOLUSDT 30m 数据获取成功 - 插入 337 条记录，耗时 0.58s
+2025-08-11 13:55:51,298 - OfflineDataScheduler - INFO - 开始获取 SOLUSDT 4h 数据...
+2025-08-11 13:55:51,298 - OfflineDataScheduler - INFO - [33/60] 处理 SOLUSDT 30m
+2025-08-11 13:55:51,316 - OfflineDataScheduler - INFO - ✅ SOLUSDT 1h 数据获取成功 - 插入 169 条记录，耗时 0.55s
+2025-08-11 13:55:51,317 - OfflineDataScheduler - INFO - 开始获取 SOLUSDT 1d 数据...
+2025-08-11 13:55:51,403 - OfflineDataScheduler - INFO - [34/60] 处理 SOLUSDT 1h
+2025-08-11 13:55:51,431 - OfflineDataScheduler - INFO - ✅ SOLUSDT 5m 数据获取成功 - 插入 2017 条记录，耗时 1.33s
+2025-08-11 13:55:51,432 - OfflineDataScheduler - INFO - 开始获取 DOTUSDT 5m 数据...
+2025-08-11 13:55:51,504 - OfflineDataScheduler - INFO - [31/60] 处理 SOLUSDT 5m
+2025-08-11 13:55:51,803 - OfflineDataScheduler - INFO - ✅ SOLUSDT 4h 数据获取成功 - 插入 43 条记录，耗时 0.51s
+2025-08-11 13:55:51,803 - OfflineDataScheduler - INFO - 开始获取 DOTUSDT 15m 数据...
+2025-08-11 13:55:51,803 - OfflineDataScheduler - INFO - [35/60] 处理 SOLUSDT 4h
+2025-08-11 13:55:52,108 - OfflineDataScheduler - INFO - ✅ SOLUSDT 1d 数据获取成功 - 插入 7 条记录，耗时 0.79s
+2025-08-11 13:55:52,108 - OfflineDataScheduler - INFO - 开始获取 DOTUSDT 30m 数据...
+2025-08-11 13:55:52,108 - OfflineDataScheduler - INFO - [36/60] 处理 SOLUSDT 1d
+2025-08-11 13:55:52,369 - OfflineDataScheduler - INFO - ✅ DOTUSDT 15m 数据获取成功 - 插入 673 条记录，耗时 0.57s
+2025-08-11 13:55:52,369 - OfflineDataScheduler - INFO - 开始获取 DOTUSDT 1h 数据...
+2025-08-11 13:55:52,370 - OfflineDataScheduler - INFO - [38/60] 处理 DOTUSDT 15m
+2025-08-11 13:55:52,659 - OfflineDataScheduler - INFO - ✅ DOTUSDT 30m 数据获取成功 - 插入 337 条记录，耗时 0.55s
+2025-08-11 13:55:52,660 - OfflineDataScheduler - INFO - 开始获取 DOTUSDT 4h 数据...
+2025-08-11 13:55:52,660 - OfflineDataScheduler - INFO - [39/60] 处理 DOTUSDT 30m
+2025-08-11 13:55:52,711 - OfflineDataScheduler - INFO - ✅ DOTUSDT 5m 数据获取成功 - 插入 2017 条记录，耗时 1.28s
+2025-08-11 13:55:52,711 - OfflineDataScheduler - INFO - 开始获取 DOTUSDT 1d 数据...
+2025-08-11 13:55:52,768 - OfflineDataScheduler - INFO - [37/60] 处理 DOTUSDT 5m
+2025-08-11 13:55:52,865 - OfflineDataScheduler - INFO - ✅ DOTUSDT 1h 数据获取成功 - 插入 169 条记录，耗时 0.50s
+2025-08-11 13:55:52,865 - OfflineDataScheduler - INFO - 开始获取 DOGEUSDT 5m 数据...
+2025-08-11 13:55:52,872 - OfflineDataScheduler - INFO - [40/60] 处理 DOTUSDT 1h
+2025-08-11 13:55:53,145 - OfflineDataScheduler - INFO - ✅ DOTUSDT 4h 数据获取成功 - 插入 43 条记录，耗时 0.48s
+2025-08-11 13:55:53,145 - OfflineDataScheduler - INFO - 开始获取 DOGEUSDT 15m 数据...
+2025-08-11 13:55:53,145 - OfflineDataScheduler - INFO - [41/60] 处理 DOTUSDT 4h
+2025-08-11 13:55:53,519 - OfflineDataScheduler - INFO - ✅ DOTUSDT 1d 数据获取成功 - 插入 7 条记录，耗时 0.81s
+2025-08-11 13:55:53,519 - OfflineDataScheduler - INFO - 开始获取 DOGEUSDT 30m 数据...
+2025-08-11 13:55:53,519 - OfflineDataScheduler - INFO - [42/60] 处理 DOTUSDT 1d
+2025-08-11 13:55:53,718 - OfflineDataScheduler - INFO - ✅ DOGEUSDT 15m 数据获取成功 - 插入 673 条记录，耗时 0.57s
+2025-08-11 13:55:53,719 - OfflineDataScheduler - INFO - 开始获取 DOGEUSDT 1h 数据...
+2025-08-11 13:55:53,719 - OfflineDataScheduler - INFO - [44/60] 处理 DOGEUSDT 15m
+2025-08-11 13:55:54,061 - OfflineDataScheduler - INFO - ✅ DOGEUSDT 30m 数据获取成功 - 插入 337 条记录，耗时 0.54s
+2025-08-11 13:55:54,061 - OfflineDataScheduler - INFO - 开始获取 DOGEUSDT 4h 数据...
+2025-08-11 13:55:54,061 - OfflineDataScheduler - INFO - [45/60] 处理 DOGEUSDT 30m
+2025-08-11 13:55:54,212 - OfflineDataScheduler - INFO - ✅ DOGEUSDT 1h 数据获取成功 - 插入 169 条记录，耗时 0.49s
+2025-08-11 13:55:54,213 - OfflineDataScheduler - INFO - 开始获取 DOGEUSDT 1d 数据...
+2025-08-11 13:55:54,213 - OfflineDataScheduler - INFO - [46/60] 处理 DOGEUSDT 1h
+2025-08-11 13:55:54,395 - OfflineDataScheduler - INFO - ✅ DOGEUSDT 5m 数据获取成功 - 插入 2017 条记录，耗时 1.53s
+2025-08-11 13:55:54,395 - OfflineDataScheduler - INFO - 开始获取 AVAXUSDT 5m 数据...
+2025-08-11 13:55:54,395 - OfflineDataScheduler - INFO - [43/60] 处理 DOGEUSDT 5m
+2025-08-11 13:55:54,542 - OfflineDataScheduler - INFO - ✅ DOGEUSDT 4h 数据获取成功 - 插入 43 条记录，耗时 0.48s
+2025-08-11 13:55:54,542 - OfflineDataScheduler - INFO - 开始获取 AVAXUSDT 15m 数据...
+2025-08-11 13:55:54,542 - OfflineDataScheduler - INFO - [47/60] 处理 DOGEUSDT 4h
+2025-08-11 13:55:54,989 - OfflineDataScheduler - INFO - ✅ DOGEUSDT 1d 数据获取成功 - 插入 7 条记录，耗时 0.78s
+2025-08-11 13:55:54,989 - OfflineDataScheduler - INFO - 开始获取 AVAXUSDT 30m 数据...
+2025-08-11 13:55:54,989 - OfflineDataScheduler - INFO - [48/60] 处理 DOGEUSDT 1d
+2025-08-11 13:55:55,110 - OfflineDataScheduler - INFO - ✅ AVAXUSDT 15m 数据获取成功 - 插入 673 条记录，耗时 0.57s
+2025-08-11 13:55:55,111 - OfflineDataScheduler - INFO - 开始获取 AVAXUSDT 1h 数据...
+2025-08-11 13:55:55,111 - OfflineDataScheduler - INFO - [50/60] 处理 AVAXUSDT 15m
+2025-08-11 13:55:55,531 - OfflineDataScheduler - INFO - ✅ AVAXUSDT 30m 数据获取成功 - 插入 337 条记录，耗时 0.54s
+2025-08-11 13:55:55,531 - OfflineDataScheduler - INFO - 开始获取 AVAXUSDT 4h 数据...
+2025-08-11 13:55:55,531 - OfflineDataScheduler - INFO - [51/60] 处理 AVAXUSDT 30m
+2025-08-11 13:55:55,613 - OfflineDataScheduler - INFO - ✅ AVAXUSDT 1h 数据获取成功 - 插入 169 条记录，耗时 0.50s
+2025-08-11 13:55:55,613 - OfflineDataScheduler - INFO - 开始获取 AVAXUSDT 1d 数据...
+2025-08-11 13:55:55,641 - OfflineDataScheduler - INFO - [52/60] 处理 AVAXUSDT 1h
+2025-08-11 13:55:55,727 - OfflineDataScheduler - INFO - ✅ AVAXUSDT 5m 数据获取成功 - 插入 2017 条记录，耗时 1.33s
+2025-08-11 13:55:55,728 - OfflineDataScheduler - INFO - 开始获取 LINKUSDT 5m 数据...
+2025-08-11 13:55:55,745 - OfflineDataScheduler - INFO - [49/60] 处理 AVAXUSDT 5m
+2025-08-11 13:55:56,026 - OfflineDataScheduler - INFO - ✅ AVAXUSDT 4h 数据获取成功 - 插入 43 条记录，耗时 0.49s
+2025-08-11 13:55:56,026 - OfflineDataScheduler - INFO - 开始获取 LINKUSDT 15m 数据...
+2025-08-11 13:55:56,026 - OfflineDataScheduler - INFO - [53/60] 处理 AVAXUSDT 4h
+2025-08-11 13:55:56,424 - OfflineDataScheduler - INFO - ✅ AVAXUSDT 1d 数据获取成功 - 插入 7 条记录，耗时 0.81s
+2025-08-11 13:55:56,424 - OfflineDataScheduler - INFO - 开始获取 LINKUSDT 30m 数据...
+2025-08-11 13:55:56,424 - OfflineDataScheduler - INFO - [54/60] 处理 AVAXUSDT 1d
+2025-08-11 13:55:56,834 - OfflineDataScheduler - INFO - ✅ LINKUSDT 15m 数据获取成功 - 插入 673 条记录，耗时 0.81s
+2025-08-11 13:55:56,835 - OfflineDataScheduler - INFO - 开始获取 LINKUSDT 1h 数据...
+2025-08-11 13:55:56,835 - OfflineDataScheduler - INFO - [56/60] 处理 LINKUSDT 15m
+2025-08-11 13:55:56,957 - OfflineDataScheduler - INFO - ✅ LINKUSDT 30m 数据获取成功 - 插入 337 条记录，耗时 0.53s
+2025-08-11 13:55:56,957 - OfflineDataScheduler - INFO - 开始获取 LINKUSDT 4h 数据...
+2025-08-11 13:55:56,957 - OfflineDataScheduler - INFO - [57/60] 处理 LINKUSDT 30m
+2025-08-11 13:55:57,041 - OfflineDataScheduler - INFO - ✅ LINKUSDT 5m 数据获取成功 - 插入 2017 条记录，耗时 1.31s
+2025-08-11 13:55:57,041 - OfflineDataScheduler - INFO - 开始获取 LINKUSDT 1d 数据...
+2025-08-11 13:55:57,063 - OfflineDataScheduler - INFO - [55/60] 处理 LINKUSDT 5m
+2025-08-11 13:55:57,338 - OfflineDataScheduler - INFO - ✅ LINKUSDT 1h 数据获取成功 - 插入 169 条记录，耗时 0.50s
+2025-08-11 13:55:57,339 - OfflineDataScheduler - INFO - [58/60] 处理 LINKUSDT 1h
+2025-08-11 13:55:57,450 - OfflineDataScheduler - INFO - ✅ LINKUSDT 4h 数据获取成功 - 插入 43 条记录，耗时 0.49s
+2025-08-11 13:55:57,451 - OfflineDataScheduler - INFO - [59/60] 处理 LINKUSDT 4h
+2025-08-11 13:55:57,854 - OfflineDataScheduler - INFO - ✅ LINKUSDT 1d 数据获取成功 - 插入 7 条记录，耗时 0.81s
+2025-08-11 13:55:57,855 - OfflineDataScheduler - INFO - [60/60] 处理 LINKUSDT 1d

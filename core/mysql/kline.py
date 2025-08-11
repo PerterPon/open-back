@@ -258,6 +258,11 @@ def batch_create_klines(data_list: List[Dict[str, Any]]) -> int:
     return KlineDAO.batch_create(data_list)
 
 
+def get_latest_by_currency_time_interval(currency: str, time_interval: str) -> Optional[Dict[str, Any]]:
+    """获取指定货币和时间间隔的最新 Kline 记录"""
+    return KlineDAO.get_latest_by_currency_time_interval(currency, time_interval)
+
+
 # 测试代码
 if __name__ == "__main__":
     print("🧪 测试 Kline DAO...")
