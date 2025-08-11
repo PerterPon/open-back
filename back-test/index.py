@@ -45,17 +45,15 @@ from core.mysql.kline import get_all_klines_by_currency_time_interval
 
 
 class BacktestAnalyzer(bt.Analyzer):
-    """自定义分析器，用于收集交易数据和统计信息"""
+    """简化的自定义分析器，只收集内置分析器无法提供的信息"""
     
     def __init__(self):
         super().__init__()
-        self.trades = []
-        self.balances = []
-        self.returns = []
-        self.equity_curve = []
+        self.trades = []  # 详细的交易记录
+        self.equity_curve = []  # 资金曲线
         
     def notify_trade(self, trade):
-        """交易完成时的回调"""
+        """交易完成时的回调 - 收集详细交易信息"""
         if trade.isclosed:
             self.trades.append({
                 'time': bt.num2date(trade.dtclose).strftime('%Y-%m-%d %H:%M:%S'),
@@ -67,29 +65,18 @@ class BacktestAnalyzer(bt.Analyzer):
                 'commission': trade.commission
             })
     
-    def notify_order(self, order):
-        """订单状态变化时的回调"""
-        pass
-    
     def next(self):
-        """每个数据点的回调"""
+        """每个数据点的回调 - 收集资金曲线"""
         current_value = self.strategy.broker.get_value()
-        self.balances.append(current_value)
         self.equity_curve.append({
             'time': bt.num2date(self.strategy.datas[0].datetime[0]).strftime('%Y-%m-%d %H:%M:%S'),
             'balance': current_value
         })
-        
-        if len(self.balances) > 1:
-            ret = (current_value - self.balances[-2]) / self.balances[-2]
-            self.returns.append(ret)
     
     def get_analysis(self):
         """返回分析结果"""
         return {
             'trades': self.trades,
-            'balances': self.balances,
-            'returns': self.returns,
             'equity_curve': self.equity_curve
         }
 
@@ -214,91 +201,90 @@ class BacktestEngine:
         # 设置手续费
         self.cerebro.broker.setcommission(commission=self.commission)
         
-        # 添加分析器（通过 cerebro 添加，而不是直接创建）
+        # 添加自定义分析器
         self.cerebro.addanalyzer(BacktestAnalyzer, _name='backtest_analyzer')
         
-        # 添加其他分析器
-        self.cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='sharpe')
+        # 添加内置分析器 - 优先使用 backtrader 内置的计算
+        self.cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='sharpe', 
+                                timeframe=bt.TimeFrame.Days, riskfreerate=0.0)
         self.cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
         self.cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name='trades')
         self.cerebro.addanalyzer(bt.analyzers.Returns, _name='returns')
+        self.cerebro.addanalyzer(bt.analyzers.AnnualReturn, _name='annual_return')
+        self.cerebro.addanalyzer(bt.analyzers.Calmar, _name='calmar')
+        self.cerebro.addanalyzer(bt.analyzers.VWR, _name='vwr')  # Variability-Weighted Return
         
         print(f"✅ 回测引擎设置完成，初始资金：{self.init_balance}")
     
-    def calculate_sharpe_ratio(self, returns: List[float], data_df: pd.DataFrame) -> float:
+    def extract_builtin_metrics(self, strategy_result) -> Dict[str, Any]:
         """
-        计算夏普比率
-        注意：需要根据数据的实际时间跨度进行年化处理
+        从 backtrader 内置分析器中提取所有指标
+        优先使用内置分析器的计算结果
         """
-        if not returns or len(returns) < 2:
-            return 0.0
+        metrics = {}
         
         try:
-            returns_array = np.array(returns)
+            # 1. 夏普比率 - 使用内置分析器
+            sharpe_analyzer = strategy_result.analyzers.sharpe.get_analysis()
+            metrics['sharpe_ratio'] = sharpe_analyzer.get('sharperatio', 0.0) or 0.0
             
-            # 计算平均收益率和标准差
-            mean_return = np.mean(returns_array)
-            std_return = np.std(returns_array, ddof=1)
+            # 2. 最大回撤 - 使用内置分析器
+            drawdown_analyzer = strategy_result.analyzers.drawdown.get_analysis()
+            metrics['max_drawdown'] = drawdown_analyzer.get('max', {}).get('drawdown', 0.0) / 100.0
             
-            if std_return == 0:
-                return 0.0
+            # 3. 交易分析 - 使用内置分析器
+            trade_analyzer = strategy_result.analyzers.trades.get_analysis()
+            metrics['trade_count'] = trade_analyzer.get('total', {}).get('closed', 0)
             
-            # 计算数据的时间跨度（年）
-            start_date = data_df.index[0]
-            end_date = data_df.index[-1]
-            time_span_days = (end_date - start_date).days
+            # 计算胜率
+            won_trades = trade_analyzer.get('won', {}).get('total', 0)
+            total_trades = metrics['trade_count']
+            metrics['winning_percentage'] = (won_trades / total_trades) if total_trades > 0 else 0.0
             
-            # 根据时间间隔确定年化因子
-            if self.time_interval == '1m':
-                periods_per_year = 365 * 24 * 60  # 每年分钟数
-                periods_in_data = len(returns)
-                actual_years = periods_in_data / periods_per_year
-            elif self.time_interval == '5m':
-                periods_per_year = 365 * 24 * 12  # 每年 5 分钟数
-                periods_in_data = len(returns)
-                actual_years = periods_in_data / periods_per_year
-            elif self.time_interval == '1h':
-                periods_per_year = 365 * 24  # 每年小时数
-                periods_in_data = len(returns)
-                actual_years = periods_in_data / periods_per_year
-            elif self.time_interval == '1d':
-                periods_per_year = 365  # 每年天数
-                periods_in_data = len(returns)
-                actual_years = periods_in_data / periods_per_year
+            # 4. 年化收益率 - 使用内置分析器
+            annual_return_analyzer = strategy_result.analyzers.annual_return.get_analysis()
+            # 处理可能的 OrderedDict 格式问题
+            if hasattr(annual_return_analyzer, 'items'):
+                # 如果是字典类型，取平均值或第一个值
+                annual_return_values = list(annual_return_analyzer.values()) if annual_return_analyzer else [0.0]
+                metrics['annual_return'] = annual_return_values[0] if annual_return_values else 0.0
             else:
-                # 默认使用日历天数计算
-                actual_years = max(time_span_days / 365.0, 1/365.0)  # 至少 1 天
+                metrics['annual_return'] = annual_return_analyzer or 0.0
             
-            # 年化收益率和波动率
-            if 'periods_per_year' in locals() and periods_per_year > 0:
-                annualized_return = mean_return * math.sqrt(periods_per_year)
-                annualized_volatility = std_return * math.sqrt(periods_per_year)
-            else:
-                annualized_return = mean_return * math.sqrt(365)
-                annualized_volatility = std_return * math.sqrt(365)
+            # 5. Calmar 比率 - 使用内置分析器
+            calmar_analyzer = strategy_result.analyzers.calmar.get_analysis()
+            metrics['calmar_ratio'] = calmar_analyzer.get('calmar', 0.0) or 0.0
             
-            # 计算夏普比率（假设无风险收益率为 0）
-            if annualized_volatility > 1e-10:  # 避免除零和极小值
-                sharpe_ratio = annualized_return / annualized_volatility
-            else:
-                sharpe_ratio = 0.0
-                
-            # 限制夏普比率在合理范围内
-            if abs(sharpe_ratio) > 100:
-                sharpe_ratio = 0.0
+            # 6. VWR - 使用内置分析器
+            vwr_analyzer = strategy_result.analyzers.vwr.get_analysis()
+            metrics['vwr'] = vwr_analyzer.get('vwr', 0.0) or 0.0
             
-            print(f"📊 收益率统计：平均={mean_return:.6f}, 标准差={std_return:.6f}")
-            print(f"📊 年化收益率：{annualized_return:.4f}, 年化波动率：{annualized_volatility:.4f}")
-            print(f"📊 数据时间跨度：{time_span_days}天，实际年数：{actual_years:.2f}")
-            
-            return round(sharpe_ratio, 4)
+            print(f"📊 内置分析器结果：")
+            print(f"   夏普比率：{metrics['sharpe_ratio']}")
+            print(f"   最大回撤：{metrics['max_drawdown']}")
+            print(f"   年化收益率：{metrics['annual_return']}")
+            print(f"   Calmar 比率：{metrics['calmar_ratio']}")
+            print(f"   VWR:{metrics['vwr']}")
+            print(f"   交易次数：{metrics['trade_count']}")
+            print(f"   胜率：{metrics['winning_percentage']}")
             
         except Exception as e:
-            print(f"❌ 计算夏普比率失败：{e}")
-            return 0.0
+            print(f"❌ 提取内置分析器结果失败：{e}")
+            # 设置默认值
+            metrics.update({
+                'sharpe_ratio': 0.0,
+                'max_drawdown': 0.0,
+                'trade_count': 0,
+                'winning_percentage': 0.0,
+                'annual_return': 0.0,
+                'calmar_ratio': 0.0,
+                'vwr': 0.0
+            })
+        
+        return metrics
     
     def run_backtest(self) -> Dict[str, Any]:
-        """执行回测"""
+        """执行回测 - 优先使用 backtrader 内置分析器"""
         # 1. 加载数据
         data_df = self.load_data()
         if data_df is None:
@@ -320,52 +306,36 @@ class BacktestEngine:
             
             print(f"✅ 回测执行完成")
             
-            # 5. 获取分析结果
-            backtest_analyzer = strategy_result.analyzers.backtest_analyzer
-            analysis = backtest_analyzer.get_analysis()
+            # 5. 获取自定义分析器结果（详细交易记录等）
+            custom_analyzer = strategy_result.analyzers.backtest_analyzer
+            custom_analysis = custom_analyzer.get_analysis()
             
-            # 6. 计算各项指标
+            # 6. 使用内置分析器提取所有指标
+            builtin_metrics = self.extract_builtin_metrics(strategy_result)
+            
+            # 7. 计算基础指标
             final_balance = self.cerebro.broker.get_value()
             total_return = (final_balance - self.init_balance) / self.init_balance
             
-            # 获取内置分析器结果
-            sharpe_analyzer = strategy_result.analyzers.sharpe.get_analysis()
-            drawdown_analyzer = strategy_result.analyzers.drawdown.get_analysis()
-            trade_analyzer = strategy_result.analyzers.trades.get_analysis()
+            # 8. 计算总手续费（从详细交易记录中）
+            total_commission = sum(trade.get('commission', 0) for trade in custom_analysis['trades'])
             
-            # 计算夏普比率
-            sharpe_ratio = self.calculate_sharpe_ratio(analysis['returns'], data_df)
-            
-            # 如果自定义计算失败，使用内置分析器的结果
-            if sharpe_ratio == 0.0 and 'sharperatio' in sharpe_analyzer:
-                sharpe_ratio = sharpe_analyzer['sharperatio'] or 0.0
-            
-            # 计算最大回撤
-            max_drawdown = 0.0
-            if 'max' in drawdown_analyzer and 'drawdown' in drawdown_analyzer['max']:
-                max_drawdown = abs(drawdown_analyzer['max']['drawdown'] / 100.0)  # 转换为小数
-            
-            # 计算交易统计
-            trade_count = len(analysis['trades'])
-            total_commission = sum(trade.get('commission', 0) for trade in analysis['trades'])
-            
-            # 计算胜率
-            winning_trades = sum(1 for trade in analysis['trades'] if trade.get('pnl', 0) > 0)
-            winning_percentage = winning_trades / trade_count if trade_count > 0 else 0.0
-            
-            # 准备结果
+            # 9. 准备最终结果 - 优先使用内置分析器的结果
             result = {
                 "currency": self.currency,
                 "time_interval": self.time_interval,
-                "sharpe_ratio": str(sharpe_ratio),
-                "trade_count": trade_count,
-                "trades": analysis['trades'],
+                "sharpe_ratio": builtin_metrics['sharpe_ratio'],
+                "trade_count": builtin_metrics['trade_count'],
+                "trades": custom_analysis['trades'],  # 详细交易记录来自自定义分析器
                 "total_commission": round(total_commission, 2),
-                "max_drawdown": round(max_drawdown, 4),
-                "winning_percentage": round(winning_percentage, 4),
+                "max_drawdown": builtin_metrics['max_drawdown'],
+                "winning_percentage": builtin_metrics['winning_percentage'],
                 "init_balance": self.init_balance,
                 "final_balance": round(final_balance, 2),
                 "total_return": round(total_return, 4),
+                "annual_return": builtin_metrics['annual_return'],
+                "calmar_ratio": builtin_metrics['calmar_ratio'],
+                "vwr": builtin_metrics['vwr'],
                 "data_points": len(data_df),
                 "start_date": str(data_df.index[0]),
                 "end_date": str(data_df.index[-1])
@@ -375,11 +345,13 @@ class BacktestEngine:
             print(f"   初始资金：{result['init_balance']}")
             print(f"   最终资金：{result['final_balance']}")
             print(f"   总收益率：{result['total_return']:.2%}")
-            print(f"   夏普比率：{result['sharpe_ratio']}")
+            print(f"   夏普比率：{result['sharpe_ratio']:.4f}")
             print(f"   最大回撤：{result['max_drawdown']:.2%}")
             print(f"   交易次数：{result['trade_count']}")
             print(f"   胜率：{result['winning_percentage']:.2%}")
             print(f"   总手续费：{result['total_commission']}")
+            print(f"   年化收益率：{result['annual_return']:.2%}")
+            print(f"   Calmar 比率：{result['calmar_ratio']:.4f}")
             
             return result
             
