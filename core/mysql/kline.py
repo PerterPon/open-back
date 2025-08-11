@@ -88,6 +88,19 @@ class KlineDAO:
         return execute_query(sql, (currency, time_interval, limit))
     
     @staticmethod
+    def get_all_by_currency_time_interval(currency: str, time_interval: str) -> List[Dict[str, Any]]:
+        """
+        获取指定货币和时间间隔的所有 Kline 记录（用于回测）
+        Args:
+            currency: 货币名称
+            time_interval: 时间间隔
+        Returns:
+            按时间升序排列的 Kline 记录列表
+        """
+        sql = f"SELECT * FROM {KlineDAO.TABLE_NAME} WHERE currency = %s AND time_interval = %s ORDER BY time ASC"
+        return execute_query(sql, (currency, time_interval))
+    
+    @staticmethod
     def get_by_time_range(currency: str, time_interval: str, start_time: datetime, end_time: datetime) -> List[Dict[str, Any]]:
         """
         根据时间范围获取 Kline 记录
@@ -241,6 +254,11 @@ def get_klines_by_currency(currency: str, limit: int = 100) -> List[Dict[str, An
 def get_klines_by_currency_time_interval(currency: str, time_interval: str, limit: int = 100) -> List[Dict[str, Any]]:
     """根据货币和时间间隔获取 Kline 记录"""
     return KlineDAO.get_by_currency_time_interval(currency, time_interval, limit)
+
+
+def get_all_klines_by_currency_time_interval(currency: str, time_interval: str) -> List[Dict[str, Any]]:
+    """获取指定货币和时间间隔的所有 Kline 记录（用于回测）"""
+    return KlineDAO.get_all_by_currency_time_interval(currency, time_interval)
 
 
 def update_kline(kline_id: int, data: Dict[str, Any]) -> bool:
