@@ -46,6 +46,39 @@ class BinanceKlineCollector:
         
         return logger
     
+    def _interval_to_timedelta(self, interval: str) -> timedelta:
+        """
+        将 interval 字符串解析为单根K线的时间跨度
+        支持: s(秒), m(分), h(时), d(天), w(周), M(月-按30天近似)
+        例如: '5m' -> timedelta(minutes=5), '4h' -> timedelta(hours=4)
+        """
+        import re
+        if not interval:
+            return timedelta(minutes=1)
+        m = re.match(r'^(\d+)([smhdwM])$', interval)
+        if not m:
+            # 兜底，默认按分钟处理
+            try:
+                return timedelta(minutes=int(interval))
+            except Exception:
+                return timedelta(minutes=1)
+        n = int(m.group(1))
+        u = m.group(2)
+        if u == 's':
+            return timedelta(seconds=n)
+        if u == 'm':
+            return timedelta(minutes=n)
+        if u == 'h':
+            return timedelta(hours=n)
+        if u == 'd':
+            return timedelta(days=n)
+        if u == 'w':
+            return timedelta(days=7 * n)
+        if u == 'M':
+            # 月按30天近似（仅用于跨度估算，不影响精确时间戳）
+            return timedelta(days=30 * n)
+        return timedelta(minutes=1)
+
     def _convert_interval(self, interval: str) -> str:
         """
         转换时间间隔格式，确保与 Binance API 兼容
@@ -213,8 +246,9 @@ class BinanceKlineCollector:
             
             # 如果最新数据时间早于结束时间，则需要获取缺失的数据
             if latest_time < end_date:
-                # 从最新数据的下一个时间点开始获取
-                next_time = latest_time + timedelta(hours=1 if time_interval == '1h' else 1440 if time_interval == '1d' else 60)
+                # 从最新K线之后的一个周期开始获取（按 interval 精确推进）
+                delta = self._interval_to_timedelta(time_interval)
+                next_time = latest_time + delta
                 missing_ranges.append((next_time, end_date))
                 self.logger.info(f"需要获取 {next_time} 到 {end_date} 的增量数据")
             else:
@@ -243,17 +277,9 @@ class BinanceKlineCollector:
             current_time = start_time
             
             while current_time < end_time:
-                # 计算本次请求的结束时间（最多获取 1000 条数据）
-                if time_interval == '1h':
-                    batch_end_time = min(current_time + timedelta(hours=1000), end_time)
-                elif time_interval == '1d':
-                    batch_end_time = min(current_time + timedelta(days=1000), end_time)
-                elif time_interval == '4h':
-                    batch_end_time = min(current_time + timedelta(hours=4000), end_time)
-                elif time_interval == '1m':
-                    batch_end_time = min(current_time + timedelta(minutes=1000), end_time)
-                else:
-                    batch_end_time = min(current_time + timedelta(hours=1000), end_time)
+                # 计算本次请求的结束时间（最多获取 1000 根K线）
+                delta = self._interval_to_timedelta(time_interval)
+                batch_end_time = min(current_time + delta * 1000, end_time)
                 
                 # 从 Binance 获取数据
                 klines = self.get_klines_from_binance(
@@ -271,12 +297,12 @@ class BinanceKlineCollector:
                         total_inserted += inserted_count
                         self.logger.info(f"成功插入 {inserted_count} 条 K 线数据")
                         
-                        # 更新当前时间为最后一条数据的时间
+                        # 更新当前时间为最后一条数据之后的一个周期，避免重复抓取
                         if klines:
                             last_kline_time = klines[-1]['time']
                             if isinstance(last_kline_time, str):
                                 last_kline_time = datetime.fromisoformat(last_kline_time)
-                            current_time = last_kline_time + timedelta(seconds=1)
+                            current_time = last_kline_time + delta
                         else:
                             current_time = batch_end_time
                             
