@@ -205,8 +205,10 @@ class BacktestEngine:
         self.cerebro.addanalyzer(BacktestAnalyzer, _name='backtest_analyzer')
         
         # 添加内置分析器 - 优先使用 backtrader 内置的计算
+        # 根据数据间隔动态设置夏普比率的时间框架和压缩比
+        timeframe, compression = self._parse_time_interval(self.time_interval)
         self.cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='sharpe', 
-                                timeframe=bt.TimeFrame.Days, riskfreerate=0.0)
+                                timeframe=timeframe, compression=compression, riskfreerate=0.0)
         self.cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
         self.cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name='trades')
         self.cerebro.addanalyzer(bt.analyzers.Returns, _name='returns')
@@ -215,6 +217,65 @@ class BacktestEngine:
         self.cerebro.addanalyzer(bt.analyzers.VWR, _name='vwr')  # Variability-Weighted Return
         
         print(f"✅ 回测引擎设置完成，初始资金：{self.init_balance}")
+    
+    def _parse_time_interval(self, time_interval: str) -> tuple:
+        """
+        解析时间间隔字符串，返回 timeframe 和 compression
+        
+        Args:
+            time_interval: 时间间隔字符串，如 '1m', '5m', '15m', '1h', '4h', '1d'
+            
+        Returns:
+            tuple: (timeframe, compression)
+        """
+        import re
+        
+        # 使用正则表达式解析时间间隔
+        pattern = r'^(\d+)([mhHdDwWM])$'
+        match = re.match(pattern, time_interval)
+        
+        if not match:
+            print(f"⚠️ 无法解析时间间隔 '{time_interval}'，使用默认值 (Minutes, 1)")
+            return bt.TimeFrame.Minutes, 1
+        
+        number = int(match.group(1))
+        unit = match.group(2)  # 保持原始大小写
+        
+        # 根据单位确定时间框架 - 注意：大写 M（月）要先判断
+        if unit == 'M':  # 大写 M 表示月，必须先判断
+            timeframe = bt.TimeFrame.Months
+            compression = number
+        elif unit.lower() == 'm':  # 小写 m 表示分钟
+            timeframe = bt.TimeFrame.Minutes
+            compression = number
+        elif unit.lower() == 'h':
+            timeframe = bt.TimeFrame.Minutes
+            compression = number * 60  # 小时转换为分钟
+        elif unit.lower() == 'd':
+            timeframe = bt.TimeFrame.Days
+            compression = number
+        elif unit.lower() == 'w':
+            timeframe = bt.TimeFrame.Weeks
+            compression = number
+        else:
+            print(f"⚠️ 未知的时间单位 '{unit}'，使用默认值 (Minutes, 1)")
+            timeframe = bt.TimeFrame.Minutes
+            compression = 1
+        
+        print(f"📊 时间间隔 '{time_interval}' 解析为：{self._timeframe_name(timeframe)}, compression={compression}")
+        
+        return timeframe, compression
+    
+    def _timeframe_name(self, timeframe: int) -> str:
+        """获取时间框架的名称（用于日志输出）"""
+        timeframe_names = {
+            bt.TimeFrame.Minutes: 'Minutes',
+            bt.TimeFrame.Days: 'Days', 
+            bt.TimeFrame.Weeks: 'Weeks',
+            bt.TimeFrame.Months: 'Months',
+            bt.TimeFrame.Years: 'Years'
+        }
+        return timeframe_names.get(timeframe, 'Unknown')
     
     def extract_builtin_metrics(self, strategy_result) -> Dict[str, Any]:
         """
