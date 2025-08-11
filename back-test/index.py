@@ -205,16 +205,23 @@ class BacktestEngine:
         self.cerebro.addanalyzer(BacktestAnalyzer, _name='backtest_analyzer')
         
         # 添加内置分析器 - 优先使用 backtrader 内置的计算
-        # 根据数据间隔动态设置夏普比率的时间框架和压缩比
+        # 根据数据间隔动态设置分析器的时间框架和压缩比
         timeframe, compression = self._parse_time_interval(self.time_interval)
+        
+        # 需要 timeframe 和 compression 参数的分析器
         self.cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='sharpe', 
                                 timeframe=timeframe, compression=compression, riskfreerate=0.0)
+        self.cerebro.addanalyzer(bt.analyzers.Returns, _name='returns',
+                                timeframe=timeframe, compression=compression)
+        self.cerebro.addanalyzer(bt.analyzers.Calmar, _name='calmar',
+                                timeframe=timeframe, compression=compression)
+        self.cerebro.addanalyzer(bt.analyzers.VWR, _name='vwr',
+                                timeframe=timeframe, compression=compression)
+        
+        # 不需要 timeframe 和 compression 参数的分析器
         self.cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
         self.cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name='trades')
-        self.cerebro.addanalyzer(bt.analyzers.Returns, _name='returns')
         self.cerebro.addanalyzer(bt.analyzers.AnnualReturn, _name='annual_return')
-        self.cerebro.addanalyzer(bt.analyzers.Calmar, _name='calmar')
-        self.cerebro.addanalyzer(bt.analyzers.VWR, _name='vwr')  # Variability-Weighted Return
         
         print(f"✅ 回测引擎设置完成，初始资金：{self.init_balance}")
     
