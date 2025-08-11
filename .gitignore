@@ -1,3 +1,3 @@
 config/default.yaml
-logs/**/*
-back-test/strategy/**/*
+data-collector/logs/*
+back-test/strategy

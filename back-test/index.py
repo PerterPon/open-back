@@ -451,6 +451,7 @@ def main():
     result = engine.run_backtest()
     
     # 输出 JSON 结果
+    print('===============================================');
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
