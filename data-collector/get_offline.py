@@ -201,15 +201,19 @@ class OfflineDataScheduler:
         if days is None:
             days = self.default_days
         
-        # 如果没有指定具体日期，则使用 days 参数
-        if not start_date or not end_date:
-            end_date = datetime.now().strftime('%Y-%m-%d')
+        # 如果未显式指定 end_date，则让离线脚本自行使用“此刻”为结束时间
+        # 仅计算 start_date；end_date 置为 None 以避免被截断到当天 00:00:00
+        if not start_date and not end_date:
             start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+            end_date = None
+        elif start_date and not end_date:
+            # 用户指定了开始日期但未给结束日期，同样使用“此刻”作为结束时间
+            end_date = None
         
         self.logger.info(f"🚀 开始批量数据收集")
         self.logger.info(f"货币对：{currencies}")
         self.logger.info(f"时间间隔：{intervals}")
-        self.logger.info(f"时间范围：{start_date} 到 {end_date}")
+        self.logger.info(f"时间范围：{start_date} 到 {end_date if end_date else 'now'}")
         self.logger.info(f"最大并发数：{max_workers}")
         self.logger.info("=" * 60)
         
