@@ -10,7 +10,7 @@ from datetime import datetime
 
 # 添加项目根目录到 Python 路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from core.mysql.index import get_cursor, execute_query, execute_update, execute_many
+from core.mysql.index_main import get_cursor, execute_query, execute_update, execute_many
 
 
 class KlineDAO:
@@ -304,26 +304,26 @@ if __name__ == "__main__":
         
         # 测试查询
         kline = get_kline_by_id(kline_id)
-        print(f"✅ 查询 Kline 记录成功: {kline['currency']} - {kline['time_interval']}")
+        print(f"✅ 查询 Kline 记录成功：{kline['currency']} - {kline['time_interval']}")
         
         # 测试更新
         update_data = {'comment': '更新后的测试数据'}
         success = update_kline(kline_id, update_data)
-        print(f"✅ 更新 Kline 记录: {'成功' if success else '失败'}")
+        print(f"✅ 更新 Kline 记录：{'成功' if success else '失败'}")
         
         # 测试按货币查询
         klines = get_klines_by_currency('BTCUSDT', 5)
-        print(f"✅ 查询 BTCUSDT 记录数: {len(klines)}")
+        print(f"✅ 查询 BTCUSDT 记录数：{len(klines)}")
         
         # 测试按货币和时间间隔查询
         klines = get_klines_by_currency_time_interval('BTCUSDT', '1h', 5)
-        print(f"✅ 查询 BTCUSDT 1h 记录数: {len(klines)}")
+        print(f"✅ 查询 BTCUSDT 1h 记录数：{len(klines)}")
         
         # 测试删除
         success = delete_kline(kline_id)
-        print(f"✅ 删除 Kline 记录: {'成功' if success else '失败'}")
+        print(f"✅ 删除 Kline 记录：{'成功' if success else '失败'}")
         
         print("🎉 所有测试通过！")
         
     except Exception as e:
-        print(f"❌ 测试失败: {e}")
+        print(f"❌ 测试失败：{e}")

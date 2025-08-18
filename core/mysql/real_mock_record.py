@@ -9,7 +9,7 @@ from typing import List, Dict, Any, Optional
 
 # 添加项目根目录到 Python 路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from core.mysql.index import get_cursor, execute_query, execute_update, execute_many
+from core.mysql.index_main import get_cursor, execute_query, execute_update, execute_many
 
 
 class RealMockRecordDAO:
