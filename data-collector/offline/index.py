@@ -25,7 +25,7 @@ from core.mysql.kline import (
 
 
 class BinanceKlineCollector:
-    """Binance K线数据收集器"""
+    """Binance K 线数据收集器"""
     
     def __init__(self):
         self.base_url = "https://api.binance.com"
@@ -48,9 +48,9 @@ class BinanceKlineCollector:
     
     def _interval_to_timedelta(self, interval: str) -> timedelta:
         """
-        将 interval 字符串解析为单根K线的时间跨度
-        支持: s(秒), m(分), h(时), d(天), w(周), M(月-按30天近似)
-        例如: '5m' -> timedelta(minutes=5), '4h' -> timedelta(hours=4)
+        将 interval 字符串解析为单根 K 线的时间跨度
+        支持：s(秒), m(分), h(时), d(天), w(周), M(月 - 按 30 天近似)
+        例如：'5m' -> timedelta(minutes=5), '4h' -> timedelta(hours=4)
         """
         import re
         if not interval:
@@ -75,10 +75,31 @@ class BinanceKlineCollector:
         if u == 'w':
             return timedelta(days=7 * n)
         if u == 'M':
-            # 月按30天近似（仅用于跨度估算，不影响精确时间戳）
+            # 月按 30 天近似（仅用于跨度估算，不影响精确时间戳）
             return timedelta(days=30 * n)
         return timedelta(minutes=1)
 
+    def _floor_to_interval(self, dt: datetime, interval: str) -> datetime:
+        """
+        将时间 dt 向下取整到 interval 的起始时刻。
+        例如：dt=13:14, interval=15m -> 13:00; interval=1h -> 13:00
+        """
+        delta = self._interval_to_timedelta(interval)
+        total_seconds = int(delta.total_seconds())
+        if total_seconds <= 0:
+            return dt.replace(second=0, microsecond=0)
+        epoch = datetime(dt.year, dt.month, dt.day)  # 当天 00:00:00 作为基准
+        seconds_since_epoch = int((dt - epoch).total_seconds())
+        floored_seconds = (seconds_since_epoch // total_seconds) * total_seconds
+        return epoch + timedelta(seconds=floored_seconds)
+
+    def _last_closed_time(self, now_dt: datetime, interval: str) -> datetime:
+        """
+        计算最后一根已收盘 K 线的开盘时间。
+        规则：last_closed_open_time = floor(now, interval) - interval
+        """
+        floor_now = self._floor_to_interval(now_dt, interval)
+        return floor_now - self._interval_to_timedelta(interval)
     def _convert_interval(self, interval: str) -> str:
         """
         转换时间间隔格式，确保与 Binance API 兼容
@@ -168,7 +189,7 @@ class BinanceKlineCollector:
             # 转换为标准格式
             klines = []
             for item in raw_data:
-                # Binance K线数据格式：
+                # Binance K 线数据格式：
                 # [
                 #   1499040000000,      // 开盘时间
                 #   "0.01634790",       // 开盘价
@@ -234,25 +255,34 @@ class BinanceKlineCollector:
         missing_ranges = []
         
         if latest_record is None:
-            # 如果没有任何数据，则整个时间范围都需要获取
-            missing_ranges.append((start_date, end_date))
-            self.logger.info(f"数据库中没有 {currency} {time_interval} 的数据，需要获取 {start_date} 到 {end_date} 的数据")
+            # 如果没有任何数据，抓取到最后一根已收盘 K 线为止
+            effective_end = self._last_closed_time(end_date or datetime.now(), time_interval)
+            if start_date < effective_end:
+                missing_ranges.append((start_date, effective_end))
+                self.logger.info(f"数据库无历史，获取 {start_date} 到 {effective_end} 的数据")
+            else:
+                self.logger.info("数据库无历史，但当前尚无已收盘 K 线可获取")
         else:
             latest_time = latest_record['time']
             if isinstance(latest_time, str):
                 latest_time = datetime.fromisoformat(latest_time.replace('Z', '+00:00'))
             
-            self.logger.info(f"数据库中最新数据时间：{latest_time}")
-            
-            # 如果最新数据时间早于结束时间，则需要获取缺失的数据
-            if latest_time < end_date:
-                # 从最新K线之后的一个周期开始获取（按 interval 精确推进）
-                delta = self._interval_to_timedelta(time_interval)
-                next_time = latest_time + delta
-                missing_ranges.append((next_time, end_date))
-                self.logger.info(f"需要获取 {next_time} 到 {end_date} 的增量数据")
+            # 根据当前时间/传入的结束时间，计算最后一根已收盘 K 线的开盘时间
+            effective_end = self._last_closed_time(end_date or datetime.now(), time_interval)
+            self.logger.info(f"数据库最新：{latest_time}，有效结束：{effective_end}")
+
+            if latest_time >= effective_end:
+                self.logger.info("最新已收盘 K 线已存在，无需更新")
+                return []
+
+            # 从最新 K 线之后的一个周期开始获取（按 interval 精确推进），终点为有效结束
+            delta = self._interval_to_timedelta(time_interval)
+            next_time = latest_time + delta
+            if next_time <= effective_end:
+                missing_ranges.append((next_time, effective_end))
+                self.logger.info(f"需要获取 {next_time} 到 {effective_end} 的增量数据")
             else:
-                self.logger.info("数据库中的数据已经是最新的，无需更新")
+                self.logger.info("无增量区间")
         
         return missing_ranges
     
@@ -277,7 +307,7 @@ class BinanceKlineCollector:
             current_time = start_time
             
             while current_time < end_time:
-                # 计算本次请求的结束时间（最多获取 1000 根K线）
+                # 计算本次请求的结束时间（最多获取 1000 根 K 线）
                 delta = self._interval_to_timedelta(time_interval)
                 batch_end_time = min(current_time + delta * 1000, end_time)
                 
@@ -330,7 +360,7 @@ def parse_arguments():
                        help='时间间隔，如 1h, 4h, 1d (默认：1h)')
     
     parser.add_argument('--start-date', '-s', type=str,
-                       help='开始日期，格式：YYYY-MM-DD (默认：2年前)')
+                       help='开始日期，格式：YYYY-MM-DD (默认：2 年前)')
     
     parser.add_argument('--end-date', '-e', type=str,
                        help='结束日期，格式：YYYY-MM-DD (默认：今天)')
