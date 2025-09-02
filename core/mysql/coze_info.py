@@ -19,7 +19,7 @@ from core.llm.types import CozeInfo
 class CozeInfoDAO:
     """Coze Info 数据访问对象"""
     
-    TABLE_NAME = "coze_info"
+    TABLE_NAME = "coze-info"
     
     @staticmethod
     def _assembly_coze_info(item: Dict[str, Any]) -> CozeInfo:

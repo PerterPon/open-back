@@ -1,12 +1,12 @@
 """
 Coze JWT TTS 实现
 基于 Coze API 的文本转语音和对话功能
+严格使用 coze-python SDK（cozepy）方法，不做回退逻辑。
 """
 
 import json
 import random
 import logging
-import requests
 import asyncio
 from typing import Optional, Dict, Any, List
 import math
@@ -17,6 +17,9 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from core.llm.types import CozeInfo, ELLMType, TTSOptions, TTSResult
 from core.mysql.coze_info import get_all_coze_infos
+
+# 严格按 SDK 使用，假设以下符号均存在
+from cozepy import Coze, TokenAuth, JWTAuth
 
 
 class CozeJWTTTS:
@@ -42,6 +45,53 @@ class CozeJWTTTS:
         
         return logger
     
+    def _create_coze_client(self, access_token: str):
+        """
+        使用 Token 创建 SDK 客户端（中国区 base_url）。
+        """
+        return Coze(auth=TokenAuth(token=access_token), base_url=self.base_url)  # type: ignore
+
+    # ========== 与 TS 实现保持一致的 SDK 封装接口 ==========
+    async def get_voice_list(self, coze_info: Optional[CozeInfo] = None) -> Dict[str, Any]:
+        selected_coze = coze_info or await self.pick_jwt()
+        access_token = self.get_access_token(selected_coze)
+        client = self._create_coze_client(access_token)
+        return client.audio.voices.list()
+
+    async def list_space(self, coze_info: Optional[CozeInfo] = None) -> Dict[str, Any]:
+        selected_coze = coze_info or await self.pick_jwt()
+        access_token = self.get_access_token(selected_coze)
+        client = self._create_coze_client(access_token)
+        return client.workspaces.list()
+
+    async def list_agent(self, coze_info: CozeInfo, space: Dict[str, Any]) -> Dict[str, Any]:
+        access_token = self.get_access_token(coze_info)
+        client = self._create_coze_client(access_token)
+        space_id = space.get('id') if isinstance(space, dict) else getattr(space, 'id', None)
+        return client.bots.list(space_id=space_id)
+
+    async def create_agent(self, space_name: str, coze_info: CozeInfo, space: Dict[str, Any]) -> Dict[str, Any]:
+        access_token = self.get_access_token(coze_info)
+        client = self._create_coze_client(access_token)
+        space_id = space.get('id') if isinstance(space, dict) else getattr(space, 'id', None)
+        return client.bots.create(space_id=space_id, name=space_name)
+
+    async def publish_agent(self, coze_info: CozeInfo, bot_id: str) -> None:
+        access_token = self.get_access_token(coze_info)
+        client = self._create_coze_client(access_token)
+        client.bots.publish(bot_id=bot_id, connector_ids=['1024'])
+
+    async def update_agent(self, coze_info: CozeInfo, name: str, bot_id: str, model_id: str) -> None:
+        access_token = self.get_access_token(coze_info)
+        client = self._create_coze_client(access_token)
+        client.bots.update(
+            bot_id=bot_id,
+            plugin_id_list={},
+            workflow_id_list={},
+            name=name,
+            model_info_config={'model_id': model_id}
+        )
+
     async def pick_jwt(self) -> CozeInfo:
         """
         从数据库随机选择一个 Coze 配置信息
@@ -75,52 +125,17 @@ class CozeJWTTTS:
         if not all([coze_info.private_key, coze_info.key_id, coze_info.app_id, coze_info.aud]):
             raise Exception('Coze 配置信息不完整')
         
-        try:
-            # 这里需要实现 JWT token 获取逻辑
-            # 由于 Python 没有直接对应的 @coze/api 库，我们需要手动实现 JWT 签名
-            import jwt
-            import time
-            
-            # 构建 JWT payload
-            now = int(time.time())
-            payload = {
-                'iss': coze_info.app_id,
-                'aud': coze_info.aud,
-                'iat': now,
-                'exp': now + 3600,  # 1小时后过期
-                'jti': f"{coze_info.app_id}_{now}"
-            }
-            
-            # 使用私钥签名 JWT
-            token = jwt.encode(
-                payload,
-                coze_info.private_key,
-                algorithm='RS256',
-                headers={'kid': coze_info.key_id}
-            )
-            
-            # 调用 Coze API 获取 access token
-            auth_url = f"{self.base_url}/api/permission/oauth2/token"
-            auth_data = {
-                'grant_type': 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-                'assertion': token
-            }
-            
-            response = requests.post(auth_url, json=auth_data, timeout=30)
-            response.raise_for_status()
-            
-            result = response.json()
-            access_token = result.get('access_token')
-            
-            if not access_token:
-                raise Exception(f'获取 access token 失败：{result}')
-            
-            self.logger.info('获取 access token 成功')
-            return access_token
-            
-        except Exception as error:
-            self.logger.error(f'获取 Access Token 失败：{str(error)}')
-            raise error
+        # 正确方式：使用 SDK 的 JWTAuth（参考 coze-py examples）
+        auth = JWTAuth(
+            client_id=coze_info.app_id,
+            private_key=coze_info.private_key,
+            public_key_id=coze_info.key_id,
+            ttl=3600,
+            base_url=self.base_url,
+        )
+        token = auth.token
+        self.logger.info('获取 access token 成功（JWTAuth）')
+        return token
     
     def estimate_duration(self, text: str) -> float:
         """
@@ -146,63 +161,62 @@ class CozeJWTTTS:
             机器人回复
         """
         self.logger.info(f'conversation, model_name: {model_name.value}')
-        
-        # 获取访问令牌
+
+        # 获取访问令牌 -> SDK 调用
         access_token = self.get_access_token(coze_info)
-        
+
         # 解析 comment 中的配置信息
         comment_data = {}
         try:
             if coze_info.comment:
                 comment_data = json.loads(coze_info.comment)
-        except json.JSONDecodeError as error:
+        except json.JSONDecodeError:
             raise Exception(f'coze_info.comment 不是有效的 JSON 字符串：{coze_info.comment}')
-        
-        # 获取对应模型的 bot_id
-        model_config = comment_data.get(model_name.value, {})
-        bot_id = model_config.get('agent_id')
-        
+
+        # 获取对应模型的 bot/agent id
+        model_config = comment_data.get(model_name.value, {}) if isinstance(comment_data, dict) else {}
+        bot_id = model_config.get('agent_id') or model_config.get('bot_id')
         if not bot_id:
-            raise Exception(f'未找到模型 {model_name.value} 对应的 bot_id')
-        
-        # 调用 Coze 对话 API
-        chat_url = f"{self.base_url}/v3/chat"
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json'
-        }
-        
-        chat_data = {
-            'bot_id': bot_id,
-            'user_id': 'user_001',  # 可以根据需要自定义
-            'additional_messages': [
-                {
-                    'role': 'user',
-                    'content': message
-                }
-            ],
-            'stream': False
-        }
-        
+            raise Exception(f'未找到模型 {model_name.value} 对应的 bot/agent id')
+
+        # 使用 SDK 发起对话：直接 create_and_poll（与 TS 对齐）
+        coze = self._create_coze_client(access_token)
+        resp = coze.chat.create_and_poll(
+            bot_id=bot_id,
+            additional_messages=[{'role': 'user', 'content': message}],
+        )
+        messages = resp.messages
+        return messages[0].content
+
+    def conversation_with_messages(self, coze_info: CozeInfo, model_name: ELLMType, messages: List[Dict[str, str]]) -> str:
+        """
+        与 Coze 机器人进行多消息对话（与 TS 版 conversationWithMessages 对齐）
+        """
+        self.logger.info(f'conversation_with_messages, model_name: {model_name.value}, messages: {len(messages)}')
+
+        access_token = self.get_access_token(coze_info)
+
+        # 解析 comment，获取 bot/agent id
         try:
-            response = requests.post(chat_url, headers=headers, json=chat_data, timeout=60)
-            response.raise_for_status()
-            
-            result = response.json()
-            
-            # 解析响应获取机器人回复
-            messages = result.get('messages', [])
-            if messages:
-                # 获取最后一条助手消息
-                for msg in reversed(messages):
-                    if msg.get('role') == 'assistant':
-                        return msg.get('content', '')
-            
-            raise Exception('未获取到有效的机器人回复')
-            
-        except requests.exceptions.RequestException as e:
-            self.logger.error(f'Coze API 请求失败：{e}')
-            raise Exception(f'Coze API 请求失败：{e}')
+            comment_data = json.loads(coze_info.comment) if coze_info.comment else {}
+        except json.JSONDecodeError:
+            raise Exception(f'coze_info.comment 不是有效的 JSON 字符串：{coze_info.comment}')
+
+        model_config = comment_data.get(model_name.value, {}) if isinstance(comment_data, dict) else {}
+        bot_id = model_config.get('agent_id') or model_config.get('bot_id')
+        if not bot_id:
+            raise Exception(f'未找到模型 {model_name.value} 对应的 bot/agent id')
+
+        coze = self._create_coze_client(access_token)
+        resp = coze.chat.create_and_poll(
+            bot_id=bot_id,
+            additional_messages=messages,
+        )
+        if getattr(resp.chat, 'status', None) == 'failed':
+            error = Exception(getattr(resp.chat.last_error, 'msg', '') or getattr(resp.chat.last_error, 'message', ''))
+            setattr(error, 'originCode', f"{getattr(resp.chat.last_error, 'code', '')}")  # type: ignore
+            raise error
+        return resp.messages[0].content
     
     async def tts(self, options: TTSOptions, coze_info: Optional[CozeInfo] = None) -> TTSResult:
         """
@@ -229,30 +243,19 @@ class CozeJWTTTS:
                 
                 self.logger.info(f'使用 Coze 配置 ID: {selected_coze.id}, 名称：{selected_coze.name}')
                 
-                # 获取 access token
-                access_token = await self.get_access_token(selected_coze)
+                # 获取 access token（同步方法，移除误用的 await）
+                access_token = self.get_access_token(selected_coze)
                 self.logger.info('获取 access token 成功')
-                
-                # 调用 TTS API
-                tts_url = f"{self.base_url}/v1/audio/speech"
-                headers = {
-                    'Authorization': f'Bearer {access_token}',
-                    'Content-Type': 'application/json'
-                }
-                
-                tts_data = {
-                    'input': options.text,
-                    'voice_id': options.voice,
-                    'speed': options.speed,
-                    'sample_rate': 48000,
-                    'response_format': 'mp3'
-                }
-                
-                response = requests.post(tts_url, headers=headers, json=tts_data, timeout=60)
-                response.raise_for_status()
-                
-                # 处理音频数据
-                audio_data = response.content
+
+                coze = self._create_coze_client(access_token)
+                sdk_resp = coze.audio.speech.create(
+                    input=options.text,
+                    voice_id=options.voice,
+                    speed=options.speed,
+                    sample_rate=48000,
+                    response_format='mp3',
+                )
+                audio_data = sdk_resp if isinstance(sdk_resp, (bytes, bytearray)) else sdk_resp.data
                 
                 self.logger.info(f'TTS 成功，获取音频大小：{len(audio_data)} 字节')
                 

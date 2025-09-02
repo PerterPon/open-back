@@ -12,9 +12,17 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from core.llm.base import BaseLLM
-from core.llm.types import ELLMType
+from core.llm.types import ELLMType, CozeInfo
 from core.llm.coze_jwt import CozeJWTTTS
 from core.mysql.coze_info import get_all_coze_infos
+import requests
+try:
+    from cozepy import Coze, TokenAuth, Message, ChatStatus
+except Exception:  # pragma: no cover
+    Coze = None  # type: ignore
+    TokenAuth = None  # type: ignore
+    Message = None  # type: ignore
+    ChatStatus = None  # type: ignore
 
 
 class LLMCozeLike(BaseLLM):
@@ -24,11 +32,12 @@ class LLMCozeLike(BaseLLM):
     """
     
     def __init__(self, sub_name: ELLMType):
-        super().__init__()
+        # 先设置子类所需字段，确保基类初始化时可用
         self.name = 'cozeLike'
         self.sub_name = sub_name
         self.coze_jwt_tts: Optional[CozeJWTTTS] = None
-        self.logger = self._setup_logger()
+        # 再调用基类构造，基类会调用 _setup_logger，且可安全使用 sub_name
+        super().__init__()
     
     def _setup_logger(self) -> logging.Logger:
         """设置专用的日志记录器"""
@@ -70,6 +79,8 @@ class LLMCozeLike(BaseLLM):
         
         if not self.coze_jwt_tts:
             raise Exception('CozeJWTTTS 未初始化，请先调用 init() 方法')
+        if Coze is None or TokenAuth is None:
+            raise Exception('cozepy 未安装或导入失败，请先安装 cozepy 库')
         
         try:
             # 获取所有可用的 Coze 配置信息
@@ -88,11 +99,35 @@ class LLMCozeLike(BaseLLM):
             selected_coze = random.choice(valid_coze_infos)
             self.logger.info(f'选择 Coze 配置：{selected_coze.name} (ID: {selected_coze.id})')
             
-            # 调用对话接口
-            result = self.coze_jwt_tts.conversation(selected_coze, self.sub_name, content)
-            
-            self.logger.info(f'对话完成，回复长度：{len(result)}')
-            return result
+            # 解析 comment 中的模型配置，找到 agent/bot id
+            import json as _json
+            model_config = {}
+            try:
+                if selected_coze.comment:
+                    all_cfg = _json.loads(selected_coze.comment)
+                    model_config = all_cfg.get(self.sub_name.value, {}) if isinstance(all_cfg, dict) else {}
+            except Exception:
+                model_config = {}
+            bot_id = model_config.get('agent_id') or model_config.get('bot_id')
+            if not bot_id:
+                raise Exception(f'未找到模型 {self.sub_name.value} 对应的 bot/agent id')
+
+            # 获取 access token，并用 SDK 的 create_and_poll 发起对话（与官方示例对齐）
+            access_token = self.coze_jwt_tts.get_access_token(selected_coze)
+            coze = Coze(auth=TokenAuth(token=access_token), base_url=self.coze_jwt_tts.base_url)  # type: ignore
+            self.logger.info(f'使用 SDK 发起对话，bot_id: {bot_id}, prompt: {content}')
+            resp = coze.chat.create_and_poll(
+                user_id='user_id',
+                bot_id=bot_id,
+                additional_messages=[Message.build_user_question_text(content)],
+            )
+            msg = resp.messages[0].content if getattr(resp, 'messages', None) else ''
+
+            if not msg:
+                raise Exception('cozepy 返回空内容')
+
+            self.logger.info(f'对话完成，回复长度：{len(msg)}')
+            return msg
             
         except Exception as e:
             self.logger.error(f'completions 调用失败：{str(e)}')
@@ -127,17 +162,8 @@ class LLMCozeLike(BaseLLM):
         selected_coze = coze_info or await self.coze_jwt_tts.pick_jwt()
         access_token = self.coze_jwt_tts.get_access_token(selected_coze)
         
-        # 调用 Coze API 获取语音列表
-        voices_url = f"{self.coze_jwt_tts.base_url}/v1/audio/voices"
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json'
-        }
-        
-        response = requests.get(voices_url, headers=headers, timeout=30)
-        response.raise_for_status()
-        
-        return response.json()
+        # 使用 SDK 封装的接口，与 TS 对齐
+        return await self.coze_jwt_tts.get_voice_list(selected_coze)
     
     async def list_workspaces(self, coze_info: Optional[CozeInfo] = None) -> Dict[str, Any]:
         """
@@ -153,17 +179,8 @@ class LLMCozeLike(BaseLLM):
         selected_coze = coze_info or await self.coze_jwt_tts.pick_jwt()
         access_token = self.coze_jwt_tts.get_access_token(selected_coze)
         
-        # 调用 Coze API 获取工作空间列表
-        workspaces_url = f"{self.coze_jwt_tts.base_url}/v1/workspaces"
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json'
-        }
-        
-        response = requests.get(workspaces_url, headers=headers, timeout=30)
-        response.raise_for_status()
-        
-        return response.json()
+        # 使用 SDK 封装的接口
+        return await self.coze_jwt_tts.list_space(selected_coze)
     
     async def list_bots(self, coze_info: CozeInfo, space_id: str) -> Dict[str, Any]:
         """
@@ -177,21 +194,10 @@ class LLMCozeLike(BaseLLM):
         if not self.coze_jwt_tts:
             raise Exception('CozeJWTTTS 未初始化')
         
-        access_token = await self.coze_jwt_tts.get_access_token(coze_info)
+        access_token = self.coze_jwt_tts.get_access_token(coze_info)
         
-        # 调用 Coze API 获取机器人列表
-        bots_url = f"{self.coze_jwt_tts.base_url}/v1/bots"
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json'
-        }
-        
-        params = {'space_id': space_id}
-        
-        response = requests.get(bots_url, headers=headers, params=params, timeout=30)
-        response.raise_for_status()
-        
-        return response.json()
+        # 使用 SDK 封装的接口
+        return await self.coze_jwt_tts.list_agent(coze_info, {'id': space_id})
     
     async def create_bot(self, coze_info: CozeInfo, space_id: str, bot_name: str) -> Dict[str, Any]:
         """
@@ -206,24 +212,10 @@ class LLMCozeLike(BaseLLM):
         if not self.coze_jwt_tts:
             raise Exception('CozeJWTTTS 未初始化')
         
-        access_token = await self.coze_jwt_tts.get_access_token(coze_info)
+        access_token = self.coze_jwt_tts.get_access_token(coze_info)
         
-        # 调用 Coze API 创建机器人
-        create_url = f"{self.coze_jwt_tts.base_url}/v1/bots"
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json'
-        }
-        
-        create_data = {
-            'space_id': space_id,
-            'name': bot_name
-        }
-        
-        response = requests.post(create_url, headers=headers, json=create_data, timeout=30)
-        response.raise_for_status()
-        
-        return response.json()
+        # 使用 SDK 封装的接口
+        return await self.coze_jwt_tts.create_agent(bot_name, coze_info, {'id': space_id})
     
     async def publish_bot(self, coze_info: CozeInfo, bot_id: str) -> None:
         """
@@ -235,22 +227,10 @@ class LLMCozeLike(BaseLLM):
         if not self.coze_jwt_tts:
             raise Exception('CozeJWTTTS 未初始化')
         
-        access_token = await self.coze_jwt_tts.get_access_token(coze_info)
+        access_token = self.coze_jwt_tts.get_access_token(coze_info)
         
-        # 调用 Coze API 发布机器人
-        publish_url = f"{self.coze_jwt_tts.base_url}/v1/bots/{bot_id}/publish"
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json'
-        }
-        
-        publish_data = {
-            'connector_ids': ['1024']  # 默认连接器 ID
-        }
-        
-        response = requests.post(publish_url, headers=headers, json=publish_data, timeout=30)
-        response.raise_for_status()
-        
+        # 使用 SDK 封装的接口
+        await self.coze_jwt_tts.publish_agent(coze_info, bot_id)
         self.logger.info(f'机器人 {bot_id} 发布成功')
 
 
