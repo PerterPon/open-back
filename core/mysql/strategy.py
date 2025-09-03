@@ -29,7 +29,7 @@ class StrategyDAO:
         fields = [
             'name', 'currency', 'time_interval', 'sharpe_ratio', 'trade_count', 
             'trades', 'total_commission', 'max_drawdown', 'winning_percentage',
-            'reason', 'init_balance', 'final_balance', 'extra', 'content'
+            'reason', 'init_balance', 'final_balance', 'extra', 'content', 'model'
         ]
         
         # 过滤有效字段
@@ -177,7 +177,7 @@ class StrategyDAO:
         fields = [
             'name', 'currency', 'time_interval', 'sharpe_ratio', 'trade_count', 
             'trades', 'total_commission', 'max_drawdown', 'winning_percentage',
-            'reason', 'init_balance', 'final_balance', 'extra', 'content'
+            'reason', 'init_balance', 'final_balance', 'extra', 'content', 'model'
         ]
         
         # 过滤有效字段
@@ -222,7 +222,7 @@ class StrategyDAO:
         fields = [
             'name', 'currency', 'time_interval', 'sharpe_ratio', 'trade_count', 
             'trades', 'total_commission', 'max_drawdown', 'winning_percentage',
-            'reason', 'init_balance', 'final_balance', 'extra', 'content'
+            'reason', 'init_balance', 'final_balance', 'extra', 'content', 'model'
         ]
         
         # 获取第一个记录的所有字段

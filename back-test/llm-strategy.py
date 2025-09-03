@@ -222,6 +222,20 @@ def persist_strategy_result(strategy_name: str, llm_type: ELLMType, result: Dict
     try:
         currency = result.get('currency')
         interval = result.get('time_interval')
+        
+        # 检查 sharpe_ratio 是否大于 0 并且有实际交易
+        sharpe_ratio = result.get('sharpe_ratio')
+        trades = result.get('trades', [])
+        trade_count = result.get('trade_count', 0)
+        
+        if sharpe_ratio is None or sharpe_ratio <= 0:
+            LOGGER.info(f'策略 {strategy_name} 的 sharpe_ratio ({sharpe_ratio}) <= 0，跳过入库 [{currency} {interval}]')
+            return None
+            
+        # 检查是否有实际交易记录
+        if not trades or trade_count <= 0:
+            LOGGER.info(f'策略 {strategy_name} 无实际交易记录 (trades={len(trades)}, trade_count={trade_count})，跳过入库 [{currency} {interval}]')
+            return None
 
         # trades 作为 JSON 字符串保存
         trades_json = json.dumps(result.get('trades', []), ensure_ascii=False)
@@ -266,7 +280,8 @@ def persist_strategy_result(strategy_name: str, llm_type: ELLMType, result: Dict
             'init_balance': result.get('init_balance'),
             'final_balance': result.get('final_balance'),
             'extra': json.dumps(extra_payload, ensure_ascii=False),
-            'content': strategy_content
+            'content': strategy_content,
+            'model': llm_type.value
         }
 
         new_id = db_create_strategy(data)
@@ -287,7 +302,11 @@ def run_batch_backtests(strategy_name: str, llm_type: ELLMType,
         ccy, itv = job
         res = run_backtest_subprocess(ccy, itv, strategy_name)
         if res and 'error' not in res:
-            persist_strategy_result(strategy_name, llm_type, res, strategy_content)
+            result_id = persist_strategy_result(strategy_name, llm_type, res, strategy_content)
+            if result_id:
+                LOGGER.info(f'策略入库成功：{ccy} {itv} [{strategy_name}] -> ID={result_id}')
+            else:
+                LOGGER.info(f'策略未入库（sharpe_ratio <= 0 或无交易记录）：{ccy} {itv} [{strategy_name}]')
         else:
             LOGGER.warning(f'回测无结果/失败：{ccy} {itv} [{strategy_name}]')
 
