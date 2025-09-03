@@ -1,3 +1,4 @@
 config/default.yaml
 data-collector/logs/*
 back-test/strategy
+node_modules

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS 跨域测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #40a9ff;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            background: #f6f6f6;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            border-left: 4px solid #52c41a;
+            background: #f6ffed;
+        }
+        .error {
+            border-left: 4px solid #f5222d;
+            background: #fff2f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 CORS 跨域测试页面</h1>
+        <p>测试前端与后端Python服务器的跨域通信</p>
+        
+        <div class="test-section">
+            <h3>📡 测试 /test 接口</h3>
+            <button onclick="testBasicApi()">测试基础API</button>
+            <div id="basic-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 测试 getStrategy 接口</h3>
+            <button onclick="testStrategyApi()">获取策略列表</button>
+            <button onclick="testStrategySorted()">获取排序策略</button>
+            <div id="strategy-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>❌ 测试错误处理</h3>
+            <button onclick="testErrorHandling()">测试无效method</button>
+            <div id="error-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8081';
+        
+        async function apiRequest(endpoint, data) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                return { success: true, data: result, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+        
+        function displayResult(elementId, result, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.textContent = JSON.stringify(result, null, 2);
+        }
+        
+        async function testBasicApi() {
+            console.log('测试基础API...');
+            const result = await apiRequest('/test', { test: 'cors-test' });
+            displayResult('basic-result', result, result.success);
+        }
+        
+        async function testStrategyApi() {
+            console.log('测试策略API...');
+            const result = await apiRequest('/api', {
+                method: 'getStrategy',
+                data: { page: 1, pageSize: 3 }
+            });
+            displayResult('strategy-result', result, result.success);
+        }
+        
+        async function testStrategySorted() {
+            console.log('测试排序策略API...');
+            const result = await apiRequest('/api', {
+                method: 'getStrategy',
+                data: { 
+                    page: 1, 
+                    pageSize: 2, 
+                    orderBy: 'sharpe_ratio', 
+                    order: 'desc' 
+                }
+            });
+            displayResult('strategy-result', result, result.success);
+        }
+        
+        async function testErrorHandling() {
+            console.log('测试错误处理...');
+            const result = await apiRequest('/api', {
+                method: 'invalidMethod',
+                data: {}
+            });
+            displayResult('error-result', result, result.success);
+        }
+        
+        // 页面加载完成后自动测试
+        window.onload = function() {
+            console.log('CORS测试页面已加载');
+        }
+    </script>
+</body>
+</html>

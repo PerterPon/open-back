@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>策略表格颜色效果演示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .demo-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .demo-table th,
+        .demo-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .demo-table th {
+            background-color: #f7f7f7;
+            font-weight: bold;
+        }
+        .demo-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .success {
+            color: #52c41a;
+            font-weight: bold;
+        }
+        .error {
+            color: #f5222d;
+            font-weight: bold;
+        }
+        .rule-box {
+            background: #f6f6f6;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .rule-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #1890ff;
+        }
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #40a9ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 策略表格颜色效果演示</h1>
+        <p>展示Strategy页面中三个字段的红绿色标识规则和效果</p>
+
+        <div class="rule-box">
+            <div class="rule-title">📋 颜色标识规则</div>
+            <ul>
+                <li><strong>胜率 (Winning Percentage)</strong>: 
+                    <span class="success">大于50% = 绿色</span>, 
+                    <span class="error">小于等于50% = 红色</span>
+                </li>
+                <li><strong>最大回撤 (Max Drawdown)</strong>: 
+                    <span class="success">小于30% = 绿色</span>, 
+                    <span class="error">大于等于30% = 红色</span>
+                </li>
+                <li><strong>最终余额 (Final Balance)</strong>: 
+                    <span class="success">大于初始余额 = 绿色</span>, 
+                    <span class="error">小于等于初始余额 = 红色</span>
+                </li>
+            </ul>
+        </div>
+
+        <button onclick="loadRealData()">🔄 加载实际API数据</button>
+        <button onclick="showColorDemo()">🎨 显示颜色示例</button>
+
+        <h3>📊 颜色效果演示</h3>
+        <div id="demo-content">
+            <p>点击上方按钮加载数据或查看颜色示例</p>
+        </div>
+
+        <div class="rule-box">
+            <div class="rule-title">🚀 访问完整应用</div>
+            <p>在完整的React应用中查看实际效果:</p>
+            <a href="http://localhost:3000/strategy" target="_blank" style="
+                display: inline-block;
+                background: #52c41a;
+                color: white;
+                text-decoration: none;
+                padding: 12px 24px;
+                border-radius: 6px;
+                margin: 10px 0;
+            ">🌟 打开策略管理页面</a>
+        </div>
+    </div>
+
+    <script>
+        function showColorDemo() {
+            const demoData = [
+                {
+                    name: "高胜率策略",
+                    winning_percetage: 0.75,
+                    max_drawdown: 0.15,
+                    findal_balance: 11500.00,
+                    init_balance: 10000.00
+                },
+                {
+                    name: "低胜率策略", 
+                    winning_percetage: 0.35,
+                    max_drawdown: 0.45,
+                    findal_balance: 9200.00,
+                    init_balance: 10000.00
+                },
+                {
+                    name: "平衡策略",
+                    winning_percetage: 0.55,
+                    max_drawdown: 0.25,
+                    findal_balance: 10800.00,
+                    init_balance: 10000.00
+                },
+                {
+                    name: "风险策略",
+                    winning_percetage: 0.45,
+                    max_drawdown: 0.60,
+                    findal_balance: 8500.00,
+                    init_balance: 10000.00
+                }
+            ];
+
+            let html = `
+                <table class="demo-table">
+                    <thead>
+                        <tr>
+                            <th>策略名称</th>
+                            <th>胜率 (%)</th>
+                            <th>最大回撤</th>
+                            <th>最终余额</th>
+                            <th>初始余额</th>
+                            <th>盈亏状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            demoData.forEach(item => {
+                const winningPct = item.winning_percetage * 100;
+                const winningClass = winningPct > 50 ? 'success' : 'error';
+                const drawdownClass = item.max_drawdown < 0.3 ? 'success' : 'error';
+                const balanceClass = item.findal_balance > item.init_balance ? 'success' : 'error';
+                const profitLoss = item.findal_balance - item.init_balance;
+
+                html += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td><span class="${winningClass}">${winningPct.toFixed(2)}%</span></td>
+                        <td><span class="${drawdownClass}">${item.max_drawdown.toFixed(4)}</span></td>
+                        <td><span class="${balanceClass}">${item.findal_balance.toFixed(2)}</span></td>
+                        <td>${item.init_balance.toFixed(2)}</td>
+                        <td><span class="${balanceClass}">${profitLoss > 0 ? '+' : ''}${profitLoss.toFixed(2)}</span></td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+
+            document.getElementById('demo-content').innerHTML = html;
+        }
+
+        async function loadRealData() {
+            try {
+                document.getElementById('demo-content').innerHTML = '<p>🔄 正在加载实际API数据...</p>';
+                
+                const response = await fetch('http://127.0.0.1:8081/api', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        method: 'getStrategy',
+                        data: {
+                            page: 1,
+                            pageSize: 5,
+                            orderBy: 'sharpe_ratio',
+                            order: 'desc'
+                        }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    let html = `
+                        <div style="margin-bottom: 15px;">
+                            <strong>📊 实际API数据 (前5条，按夏普比率降序)</strong><br>
+                            <small>总记录数: ${result.data.pagination.total}</small>
+                        </div>
+                        <table class="demo-table">
+                            <thead>
+                                <tr>
+                                    <th>策略名称</th>
+                                    <th>胜率 (%)</th>
+                                    <th>最大回撤</th>
+                                    <th>最终余额</th>
+                                    <th>初始余额</th>
+                                    <th>夏普比率</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    result.data.strategies.forEach(item => {
+                        const winningPct = item.winning_percetage * 100;
+                        const winningClass = winningPct > 50 ? 'success' : 'error';
+                        const drawdownClass = item.max_drawdown < 0.3 ? 'success' : 'error';
+                        const balanceClass = item.findal_balance > item.init_balance ? 'success' : 'error';
+
+                        html += `
+                            <tr>
+                                <td title="${item.name}">${item.name.substring(0, 25)}...</td>
+                                <td><span class="${winningClass}">${winningPct.toFixed(2)}%</span></td>
+                                <td><span class="${drawdownClass}">${item.max_drawdown.toFixed(4)}</span></td>
+                                <td><span class="${balanceClass}">${item.findal_balance.toFixed(2)}</span></td>
+                                <td>${item.init_balance.toFixed(2)}</td>
+                                <td>${item.sharpe_ratio.toFixed(6)}</td>
+                            </tr>
+                        `;
+                    });
+
+                    html += '</tbody></table>';
+                    document.getElementById('demo-content').innerHTML = html;
+                } else {
+                    document.getElementById('demo-content').innerHTML = 
+                        `<p style="color: #f5222d;">❌ API调用失败: ${result.message}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('demo-content').innerHTML = 
+                    `<p style="color: #f5222d;">❌ 网络错误: ${error.message}</p>`;
+            }
+        }
+
+        // 页面加载时显示颜色示例
+        window.onload = function() {
+            showColorDemo();
+            console.log('💡 颜色演示页面已加载');
+            console.log('🎯 可以点击按钮查看实际API数据的颜色效果');
+        };
+    </script>
+</body>
+</html>

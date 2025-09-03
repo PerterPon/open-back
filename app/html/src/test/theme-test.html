@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主题测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* 亮色主题 */
+        body.light {
+            background-color: #ffffff;
+            color: #333333;
+        }
+        
+        /* 暗色主题 */
+        body.dark {
+            background-color: #141414;
+            color: #ffffff;
+        }
+        
+        .container {
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        body.light .container {
+            background: #ffffff;
+            border: 1px solid #d9d9d9;
+        }
+        
+        body.dark .container {
+            background: #1f1f1f;
+            border: 1px solid #424242;
+            box-shadow: 0 2px 8px rgba(255,255,255,0.1);
+        }
+        
+        .theme-info {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            transition: background-color 0.3s ease;
+        }
+        
+        body.light .theme-info {
+            background: #f6f6f6;
+            border: 1px solid #d9d9d9;
+        }
+        
+        body.dark .theme-info {
+            background: #262626;
+            border: 1px solid #424242;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+        
+        .status.light {
+            background: #fff7e6;
+            color: #d46b08;
+            border: 1px solid #ffd591;
+        }
+        
+        .status.dark {
+            background: #162312;
+            color: #95de64;
+            border: 1px solid #389e0d;
+        }
+        
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background: #40a9ff;
+        }
+        
+        .manual-theme-btn {
+            background: #722ed1;
+        }
+        
+        .manual-theme-btn:hover {
+            background: #9254de;
+        }
+        
+        .react-app-link {
+            display: inline-block;
+            background: #52c41a;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            margin: 10px 0;
+            transition: background-color 0.3s ease;
+        }
+        
+        .react-app-link:hover {
+            background: #73d13d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 系统主题检测测试</h1>
+        <p>这个页面用于测试系统主题的自动检测和切换功能。</p>
+        
+        <div class="theme-info">
+            <strong>当前检测到的系统主题:</strong>
+            <span id="current-theme" class="status">检测中...</span>
+        </div>
+        
+        <div class="theme-info">
+            <strong>页面主题状态:</strong>
+            <span id="page-theme" class="status">未设置</span>
+        </div>
+        
+        <h3>🔧 功能测试</h3>
+        
+        <button onclick="detectSystemTheme()">🔍 重新检测系统主题</button>
+        <button onclick="toggleManualTheme()" class="manual-theme-btn">🔄 手动切换页面主题</button>
+        <button onclick="openReactApp()" style="background: #52c41a;">🚀 打开React应用</button>
+        
+        <div class="theme-info">
+            <strong>操作日志:</strong>
+            <div id="log" style="margin-top: 10px; font-size: 12px;"></div>
+        </div>
+        
+        <h3>📱 使用说明</h3>
+        <ol>
+            <li><strong>自动主题检测</strong>: 页面会自动检测你的系统主题设置</li>
+            <li><strong>实时切换</strong>: 改变系统主题设置时，页面会自动跟随变化</li>
+            <li><strong>React应用</strong>: 点击下方按钮访问主React应用查看主题效果</li>
+        </ol>
+        
+        <a href="http://localhost:3000" target="_blank" class="react-app-link">
+            🌟 访问 React 应用 (http://localhost:3000)
+        </a>
+        
+        <h3>💡 主题切换测试方法</h3>
+        <div class="theme-info">
+            <strong>macOS:</strong> 系统偏好设置 → 通用 → 外观 → 选择"浅色"或"深色"<br>
+            <strong>Windows:</strong> 设置 → 个性化 → 颜色 → 选择应用模式<br>
+            <strong>浏览器:</strong> 开发者工具 → 更多工具 → 渲染 → 模拟CSS媒体功能
+        </div>
+    </div>
+
+    <script>
+        let manualTheme = null;
+        
+        function addLog(message) {
+            const log = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML += `[${time}] ${message}<br>`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function updateThemeDisplay(theme) {
+            const currentThemeEl = document.getElementById('current-theme');
+            const pageThemeEl = document.getElementById('page-theme');
+            
+            currentThemeEl.textContent = theme === 'dark' ? '暗色' : '亮色';
+            currentThemeEl.className = `status ${theme}`;
+            
+            const actualTheme = manualTheme || theme;
+            pageThemeEl.textContent = actualTheme === 'dark' ? '暗色' : '亮色';
+            pageThemeEl.className = `status ${actualTheme}`;
+            
+            // 应用主题到页面
+            document.body.className = actualTheme;
+        }
+        
+        function detectSystemTheme() {
+            if (window.matchMedia) {
+                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = isDark ? 'dark' : 'light';
+                updateThemeDisplay(theme);
+                addLog(`🔍 系统主题检测结果: ${theme === 'dark' ? '暗色' : '亮色'}`);
+                return theme;
+            } else {
+                addLog('❌ 浏览器不支持主题检测');
+                return 'light';
+            }
+        }
+        
+        function toggleManualTheme() {
+            const currentTheme = manualTheme || detectSystemTheme();
+            manualTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            updateThemeDisplay(detectSystemTheme());
+            addLog(`🔄 手动切换页面主题到: ${manualTheme === 'dark' ? '暗色' : '亮色'}`);
+        }
+        
+        function openReactApp() {
+            addLog('🚀 正在打开React应用...');
+            window.open('http://localhost:3000', '_blank');
+        }
+        
+        // 监听系统主题变化
+        if (window.matchMedia) {
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            mediaQuery.addEventListener('change', (e) => {
+                const newTheme = e.matches ? 'dark' : 'light';
+                updateThemeDisplay(newTheme);
+                addLog(`🎨 系统主题已自动切换到: ${newTheme === 'dark' ? '暗色' : '亮色'}`);
+            });
+        }
+        
+        // 页面加载时初始化
+        window.onload = function() {
+            addLog('📱 主题测试页面已加载');
+            detectSystemTheme();
+            addLog('🎯 请尝试更改系统主题设置，观察页面变化');
+        };
+    </script>
+</body>
+</html>

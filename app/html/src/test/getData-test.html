@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>getData 接口测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .button-group {
+            margin: 10px 0;
+        }
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #40a9ff;
+        }
+        button.danger {
+            background: #f5222d;
+        }
+        button.danger:hover {
+            background: #ff4d4f;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 4px;
+            background: #f6f6f6;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            border-left: 4px solid #52c41a;
+            background: #f6ffed;
+        }
+        .error {
+            border-left: 4px solid #f5222d;
+            background: #fff2f0;
+        }
+        .code {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 getData 接口测试页面</h1>
+        <p>测试新的通用 getData 接口功能</p>
+        
+        <div class="test-section">
+            <h3>📊 getStrategy 接口测试</h3>
+            <p>使用新的 getData 接口调用策略相关API</p>
+            
+            <div class="code">
+                <strong>调用方式:</strong><br>
+                getData('getStrategy', { page: 1, pageSize: 5 })
+            </div>
+            
+            <div class="button-group">
+                <button onclick="testBasicGetStrategy()">基本查询</button>
+                <button onclick="testSortedStrategy()">按夏普比率排序</button>
+                <button onclick="testBalanceSorted()">按余额排序</button>
+                <button onclick="testPagination()">分页测试</button>
+            </div>
+            <div id="strategy-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>❌ 错误处理测试</h3>
+            <p>测试无效方法名和参数的错误处理</p>
+            
+            <div class="button-group">
+                <button class="danger" onclick="testInvalidMethod()">无效方法名</button>
+                <button class="danger" onclick="testInvalidParams()">无效参数</button>
+            </div>
+            <div id="error-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔄 向后兼容性测试</h3>
+            <p>测试原有的 strategyApi 是否仍然正常工作</p>
+            
+            <div class="button-group">
+                <button onclick="testBackwardCompatibility()">测试向后兼容</button>
+            </div>
+            <div id="compat-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8081';
+        
+        // 新的 getData 接口实现
+        async function getData(method, data = {}) {
+            try {
+                const response = await fetch(`${API_BASE}/api`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        method: method,
+                        data: data
+                    })
+                });
+                
+                const result = await response.json();
+                return { success: true, data: result, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+        
+        function displayResult(elementId, result, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            
+            if (result.success && result.data) {
+                // 格式化显示API响应
+                const formatted = {
+                    success: result.data.success,
+                    message: result.data.message,
+                    dataType: typeof result.data.data,
+                    strategiesCount: result.data.data?.strategies?.length || 0,
+                    pagination: result.data.data?.pagination || null,
+                    firstStrategy: result.data.data?.strategies?.[0] || null
+                };
+                element.textContent = JSON.stringify(formatted, null, 2);
+            } else {
+                element.textContent = JSON.stringify(result, null, 2);
+            }
+        }
+        
+        // 测试函数
+        async function testBasicGetStrategy() {
+            console.log('测试基本 getStrategy...');
+            const result = await getData('getStrategy', {
+                page: 1,
+                pageSize: 5
+            });
+            displayResult('strategy-result', result, result.success);
+        }
+        
+        async function testSortedStrategy() {
+            console.log('测试按夏普比率排序...');
+            const result = await getData('getStrategy', {
+                page: 1,
+                pageSize: 3,
+                orderBy: 'sharpe_ratio',
+                order: 'desc'
+            });
+            displayResult('strategy-result', result, result.success);
+        }
+        
+        async function testBalanceSorted() {
+            console.log('测试按余额排序...');
+            const result = await getData('getStrategy', {
+                page: 1,
+                pageSize: 3,
+                orderBy: 'findal_balance',
+                order: 'desc'
+            });
+            displayResult('strategy-result', result, result.success);
+        }
+        
+        async function testPagination() {
+            console.log('测试分页功能...');
+            const result = await getData('getStrategy', {
+                page: 2,
+                pageSize: 10
+            });
+            displayResult('strategy-result', result, result.success);
+        }
+        
+        async function testInvalidMethod() {
+            console.log('测试无效方法名...');
+            const result = await getData('invalidMethod', {});
+            displayResult('error-result', result, false);
+        }
+        
+        async function testInvalidParams() {
+            console.log('测试无效参数...');
+            const result = await getData('getStrategy', {
+                page: -1,
+                orderBy: 'invalid_field'
+            });
+            displayResult('error-result', result, false);
+        }
+        
+        async function testBackwardCompatibility() {
+            console.log('测试向后兼容性...');
+            // 模拟原有的 strategyApi.getStrategies 调用
+            const result = await getData('getStrategy', {
+                page: 1,
+                pageSize: 3,
+                orderBy: 'trade_count',
+                order: 'asc'
+            });
+            displayResult('compat-result', result, result.success);
+        }
+        
+        // 页面加载完成后的提示
+        window.onload = function() {
+            console.log('💡 getData 测试页面已加载');
+            console.log('🎯 点击按钮测试不同的API功能');
+            console.log('📝 查看浏览器控制台获取详细日志');
+        }
+    </script>
+</body>
+</html>

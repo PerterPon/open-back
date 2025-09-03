@@ -55,15 +55,15 @@
 
 | 时间间隔 | timeframe | compression | 说明 |
 |---------|-----------|-------------|------|
-| 1m | Minutes | 1 | 1分钟 |
-| 5m | Minutes | 5 | 5分钟 |
-| 15m | Minutes | 15 | 15分钟 |
-| 1h | Minutes | 60 | 1小时 = 60分钟 |
-| 4h | Minutes | 240 | 4小时 = 240分钟 |
-| 12h | Minutes | 720 | 12小时 = 720分钟 |
-| 1d | Days | 1 | 1天 |
-| 1w | Weeks | 1 | 1周 |
-| 1M | Months | 1 | 1月（注意大写M） |
+| 1m | Minutes | 1 | 1 分钟 |
+| 5m | Minutes | 5 | 5 分钟 |
+| 15m | Minutes | 15 | 15 分钟 |
+| 1h | Minutes | 60 | 1 小时 = 60 分钟 |
+| 4h | Minutes | 240 | 4 小时 = 240 分钟 |
+| 12h | Minutes | 720 | 12 小时 = 720 分钟 |
+| 1d | Days | 1 | 1 天 |
+| 1w | Weeks | 1 | 1 周 |
+| 1M | Months | 1 | 1 月（注意大写 M） |
 
 ## 代码实现
 
@@ -90,7 +90,7 @@ self.cerebro.addanalyzer(bt.analyzers.AnnualReturn, _name='annual_return')
 ## 优势
 
 1. **计算准确性**: 所有分析器都使用与数据间隔一致的时间框架
-2. **动态适配**: 支持从1分钟到1月的各种数据间隔
+2. **动态适配**: 支持从 1 分钟到 1 月的各种数据间隔
 3. **规范遵循**: 完全符合 backtrader 的最佳实践
 4. **易于维护**: 统一的参数设置逻辑
 

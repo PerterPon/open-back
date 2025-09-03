@@ -1,0 +1,94 @@
+/* 主布局样式 */
+.logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 16px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+/* 暗色主题下的logo样式 */
+.theme-dark .logo {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.logo-text {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  transition: color 0.2s ease;
+}
+
+.trigger {
+  padding: 0 24px;
+  font-size: 18px;
+  line-height: 64px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.trigger:hover {
+  color: #1890ff;
+}
+
+/* 主题切换时的平滑过渡 */
+.ant-layout,
+.ant-layout-header,
+.ant-layout-content,
+.ant-layout-sider {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* 表格在暗色主题下的优化 */
+.theme-dark .ant-table {
+  background: transparent;
+}
+
+.theme-dark .ant-table-thead > tr > th {
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid #424242;
+}
+
+.theme-dark .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #424242;
+}
+
+.theme-dark .ant-table-tbody > tr:hover > td {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .logo-text {
+    font-size: 16px;
+  }
+}
+
+/* 菜单项样式优化 */
+.ant-menu-item {
+  margin: 4px 8px !important;
+  border-radius: 6px !important;
+}
+
+.ant-menu-item-selected {
+  background-color: #1890ff !important;
+}
+
+/* 头部样式 */
+.ant-layout-header {
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+}
+
+/* 内容区域样式 */
+.ant-layout-content {
+  overflow: auto;
+}
+
+/* 用户头像下拉菜单样式 */
+.ant-dropdown-menu {
+  min-width: 160px;
+}
