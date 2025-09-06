@@ -29,7 +29,7 @@ class StrategyDAO:
         fields = [
             'name', 'currency', 'time_interval', 'sharpe_ratio', 'trade_count', 
             'trades', 'total_commission', 'max_drawdown', 'winning_percentage',
-            'reason', 'init_balance', 'final_balance', 'extra', 'content', 'model'
+            'reason', 'init_balance', 'final_balance', 'extra', 'content_id', 'model'
         ]
         
         # 过滤有效字段
@@ -103,7 +103,7 @@ class StrategyDAO:
     @staticmethod
     def get_top_strategies_by_sharpe_ratio(limit: int = 10) -> List[Dict[str, Any]]:
         """
-        获取按夏普比率排序的前N个策略
+        获取按夏普比率排序的前 N 个策略
         Args:
             limit: 限制返回记录数
         Returns:
@@ -115,7 +115,7 @@ class StrategyDAO:
     @staticmethod
     def get_top_strategies_by_final_balance(limit: int = 10) -> List[Dict[str, Any]]:
         """
-        获取按最终余额排序的前N个策略
+        获取按最终余额排序的前 N 个策略
         Args:
             limit: 限制返回记录数
         Returns:
@@ -177,7 +177,7 @@ class StrategyDAO:
         fields = [
             'name', 'currency', 'time_interval', 'sharpe_ratio', 'trade_count', 
             'trades', 'total_commission', 'max_drawdown', 'winning_percentage',
-            'reason', 'init_balance', 'final_balance', 'extra', 'content', 'model'
+            'reason', 'init_balance', 'final_balance', 'extra', 'content_id', 'model'
         ]
         
         # 过滤有效字段
@@ -222,7 +222,7 @@ class StrategyDAO:
         fields = [
             'name', 'currency', 'time_interval', 'sharpe_ratio', 'trade_count', 
             'trades', 'total_commission', 'max_drawdown', 'winning_percentage',
-            'reason', 'init_balance', 'final_balance', 'extra', 'content', 'model'
+            'reason', 'init_balance', 'final_balance', 'extra', 'content_id', 'model'
         ]
         
         # 获取第一个记录的所有字段
@@ -317,12 +317,12 @@ def get_strategies_by_currency_time_interval(currency: str, time_interval: str, 
 
 
 def get_top_strategies_by_sharpe_ratio(limit: int = 10) -> List[Dict[str, Any]]:
-    """获取按夏普比率排序的前N个策略"""
+    """获取按夏普比率排序的前 N 个策略"""
     return StrategyDAO.get_top_strategies_by_sharpe_ratio(limit)
 
 
 def get_top_strategies_by_final_balance(limit: int = 10) -> List[Dict[str, Any]]:
-    """获取按最终余额排序的前N个策略"""
+    """获取按最终余额排序的前 N 个策略"""
     return StrategyDAO.get_top_strategies_by_final_balance(limit)
 
 
@@ -373,11 +373,11 @@ if __name__ == "__main__":
         
         # 测试查询
         strategy = get_strategy_by_id(strategy_id)
-        print(f"✅ 查询 Strategy 记录成功: {strategy['name']} - {strategy['currency']}")
+        print(f"✅ 查询 Strategy 记录成功：{strategy['name']} - {strategy['currency']}")
         
         # 测试按名称查询
         strategy_by_name = get_strategy_by_name('测试策略')
-        print(f"✅ 按名称查询 Strategy 记录成功: {strategy_by_name['name']}")
+        print(f"✅ 按名称查询 Strategy 记录成功：{strategy_by_name['name']}")
         
         # 测试更新
         update_data = {
@@ -386,25 +386,25 @@ if __name__ == "__main__":
             'final_balance': 12500.0
         }
         success = update_strategy(strategy_id, update_data)
-        print(f"✅ 更新 Strategy 记录: {'成功' if success else '失败'}")
+        print(f"✅ 更新 Strategy 记录：{'成功' if success else '失败'}")
         
         # 测试按货币查询
         strategies = get_strategies_by_currency('BTCUSDT', 5)
-        print(f"✅ 查询 BTCUSDT 策略数: {len(strategies)}")
+        print(f"✅ 查询 BTCUSDT 策略数：{len(strategies)}")
         
         # 测试按货币和时间间隔查询
         strategies = get_strategies_by_currency_time_interval('BTCUSDT', '1h', 5)
-        print(f"✅ 查询 BTCUSDT 1h 策略数: {len(strategies)}")
+        print(f"✅ 查询 BTCUSDT 1h 策略数：{len(strategies)}")
         
         # 测试获取统计信息
         stats = get_strategy_statistics()
-        print(f"✅ 策略统计信息: 总数={stats['total_strategies']}, 平均夏普比率={stats['avg_sharpe_ratio']:.2f}")
+        print(f"✅ 策略统计信息：总数={stats['total_strategies']}, 平均夏普比率={stats['avg_sharpe_ratio']:.2f}")
         
         # 测试删除
         success = delete_strategy(strategy_id)
-        print(f"✅ 删除 Strategy 记录: {'成功' if success else '失败'}")
+        print(f"✅ 删除 Strategy 记录：{'成功' if success else '失败'}")
         
         print("🎉 所有测试通过！")
         
     except Exception as e:
-        print(f"❌ 测试失败: {e}")
+        print(f"❌ 测试失败：{e}")

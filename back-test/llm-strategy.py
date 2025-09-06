@@ -36,6 +36,7 @@ from core.llm.types import ELLMType
 from core.llm.coze_like import create_coze_like_llm
 from core.llm.prompt.strategy import generate_strategy
 from core.mysql.strategy import create_strategy as db_create_strategy
+from core.mysql.strategy_content import get_or_create_strategy_content
 
 
 def _setup_logger() -> logging.Logger:
@@ -254,6 +255,16 @@ def persist_strategy_result(strategy_name: str, llm_type: ELLMType, result: Dict
             except Exception as e:
                 LOGGER.error(f'读取策略文件内容失败：{e}')
 
+        # 先将策略内容保存到 strategy_content 表，获取 content_id
+        content_id = None
+        if strategy_content and strategy_content.strip():
+            try:
+                content_id = get_or_create_strategy_content(strategy_content)
+                LOGGER.info(f'策略内容已保存到 strategy_content 表，content_id={content_id}')
+            except Exception as e:
+                LOGGER.error(f'保存策略内容到 strategy_content 表失败：{e}')
+                # 如果保存策略内容失败，仍然继续保存策略记录，但不设置 content_id
+
         # 额外指标放入 extra
         extra_payload = {
             'total_return': result.get('total_return'),
@@ -280,9 +291,12 @@ def persist_strategy_result(strategy_name: str, llm_type: ELLMType, result: Dict
             'init_balance': result.get('init_balance'),
             'final_balance': result.get('final_balance'),
             'extra': json.dumps(extra_payload, ensure_ascii=False),
-            'content': strategy_content,
             'model': llm_type.value
         }
+        
+        # 如果成功获取了 content_id，则添加到数据中
+        if content_id is not None:
+            data['content_id'] = content_id
 
         new_id = db_create_strategy(data)
         LOGGER.info(f'回测结果入库成功，ID={new_id} [{currency} {interval}]')
@@ -319,6 +333,26 @@ def run_batch_backtests(strategy_name: str, llm_type: ELLMType,
             list(executor.map(worker, tasks))
 
 
+def cleanup_generated_files(file_paths: List[str]) -> None:
+    """清理生成的策略文件"""
+    if not file_paths:
+        return
+    
+    deleted_count = 0
+    for file_path in file_paths:
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                deleted_count += 1
+                LOGGER.info(f'已删除策略文件：{os.path.basename(file_path)}')
+            else:
+                LOGGER.warning(f'策略文件不存在，跳过删除：{file_path}')
+        except Exception as e:
+            LOGGER.error(f'删除策略文件失败：{file_path} - {e}')
+    
+    LOGGER.info(f'清理完成，共删除 {deleted_count} 个策略文件')
+
+
 async def main_async(args: argparse.Namespace) -> int:
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
@@ -331,24 +365,35 @@ async def main_async(args: argparse.Namespace) -> int:
     LOGGER.info(f'币种：{currencies}')
     LOGGER.info(f'间隔：{intervals}')
 
-    # 1) 并行生成策略
-    LOGGER.info('开始并行生成策略代码...')
-    llm_results = await generate_strategies_in_parallel(models, generate_strategy)
+    # 用于跟踪生成的策略文件，程序结束时删除
+    generated_files = []
 
-    # 2) 逐个保存并回测
-    for llm_type, raw_code in llm_results:
-        try:
-            code = normalize_strategy_code(raw_code)
-            path, name_no_ext = save_strategy_file(code)
-            LOGGER.info(f'生成策略 [{llm_type.value}] -> {os.path.basename(path)}')
+    try:
+        # 1) 并行生成策略
+        LOGGER.info('开始并行生成策略代码...')
+        
+        llm_results = await generate_strategies_in_parallel(models, generate_strategy)
 
-            # 3) 批量回测入库
-            max_workers = 1 if args.sequential else max(1, args.max_workers)
-            run_batch_backtests(name_no_ext, llm_type, currencies, intervals, max_workers, code)
-        except Exception as e:
-            LOGGER.error(f'处理策略 [{llm_type.value}] 失败：{e}')
+        # 2) 逐个保存并回测
+        for llm_type, raw_code in llm_results:
+            try:
+                code = normalize_strategy_code(raw_code)
+                path, name_no_ext = save_strategy_file(code)
+                generated_files.append(path)  # 记录生成的文件路径
+                LOGGER.info(f'生成策略 [{llm_type.value}] -> {os.path.basename(path)}')
 
-    LOGGER.info('全部处理完成')
+                # 3) 批量回测入库
+                max_workers = 1 if args.sequential else max(1, args.max_workers)
+                run_batch_backtests(name_no_ext, llm_type, currencies, intervals, max_workers, code)
+            except Exception as e:
+                LOGGER.error(f'处理策略 [{llm_type.value}] 失败：{e}')
+
+        LOGGER.info('全部处理完成')
+        
+    finally:
+        # 4) 清理生成的策略文件
+        cleanup_generated_files(generated_files)
+    
     return 0
 
 
