@@ -113,6 +113,17 @@ class StrategyDAO:
         return execute_query(sql, (limit,))
     
     @staticmethod
+    def get_highest_sharpe_ratio_strategy() -> Optional[Dict[str, Any]]:
+        """
+        获取夏普比率最高的单条策略记录
+        Returns:
+            Strategy 记录字典，如果不存在则返回 None
+        """
+        sql = f"SELECT * FROM {StrategyDAO.TABLE_NAME} WHERE sharpe_ratio IS NOT NULL ORDER BY sharpe_ratio DESC LIMIT 1"
+        results = execute_query(sql)
+        return results[0] if results else None
+    
+    @staticmethod
     def get_top_strategies_by_final_balance(limit: int = 10) -> List[Dict[str, Any]]:
         """
         获取按最终余额排序的前 N 个策略

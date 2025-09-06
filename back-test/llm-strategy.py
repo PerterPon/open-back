@@ -35,7 +35,8 @@ sys.path.append(PROJECT_ROOT)
 from core.llm.types import ELLMType
 from core.llm.coze_like import create_coze_like_llm
 from core.llm.prompt.strategy import generate_strategy
-from core.mysql.strategy import create_strategy as db_create_strategy
+from core.mysql.strategy import create_strategy as db_create_strategy, get_top_strategies_by_sharpe_ratio
+from core.mysql.strategy_content import get_content_by_id
 from core.mysql.strategy_content import get_or_create_strategy_content
 
 
@@ -371,7 +372,18 @@ async def main_async(args: argparse.Namespace) -> int:
     try:
         # 1) 并行生成策略
         LOGGER.info('开始并行生成策略代码...')
-        
+
+        top_sharpe_strategies = get_top_strategies_by_sharpe_ratio(1)
+        top_sharpe_strategy = top_sharpe_strategies[0]
+        top_sharpe_strategy_content = get_content_by_id(top_sharpe_strategy['content_id'])
+        real_generate_strategy = generate_strategy.replace('__current_highest_strategy__', top_sharpe_strategy_content)
+        real_generate_strategy = real_generate_strategy.replace('__current_highest_strategy_sharpe_ratio__', str(top_sharpe_strategy['sharpe_ratio']))
+        real_generate_strategy = real_generate_strategy.replace('__current_highest_strategy_max_drawdown__', str(top_sharpe_strategy['max_drawdown']))
+        real_generate_strategy = real_generate_strategy.replace('__current_highest_strategy_trade_count__', str(top_sharpe_strategy['trade_count']))
+        real_generate_strategy = real_generate_strategy.replace('__current_highest_strategy_winning_percentage__', str(top_sharpe_strategy['winning_percentage']))
+        real_generate_strategy = real_generate_strategy.replace('__current_highest_strategy_total_commission__', str(top_sharpe_strategy['total_commission']))
+        real_generate_strategy = real_generate_strategy.replace('__current_highest_strategy_final_balance__', str(top_sharpe_strategy['final_balance']))
+
         llm_results = await generate_strategies_in_parallel(models, generate_strategy)
 
         # 2) 逐个保存并回测
